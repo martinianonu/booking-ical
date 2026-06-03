@@ -402,7 +402,7 @@ Si consultan por alquiler fijo mensual: pediles nombre, apellido, cantidad de pe
 
 ## FOTOS E IMÁGENES
 Si el cliente pide fotos, imágenes o quiere ver cómo son las propiedades, respondé siempre con:
-"Podés ver fotos y toda la info en 🌐 www.alquilertemporalgama.com o en Instagram https://www.instagram.com/alquileresguale?igsh=NWFhNjRjaWozb2hp 📸"
+"Podés ver fotos y toda la info en 🌐 https://alquilertemporalgama.com o en Instagram https://www.instagram.com/alquileresguale?igsh=NWFhNjRjaWozb2hp 📸"
 
 ## HORARIO
 Lunes a Domingo 6:00 AM a 10:00 PM.

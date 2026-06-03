@@ -1,5 +1,5 @@
 # GAMA DEPARTAMENTOS — Base de conocimiento de Sofía
-# Gualeguay — alquilertemporalgama.com
+# Gualeguay — https://alquilertemporalgama.com
 
 ## PROPIEDADES
 
@@ -18,7 +18,7 @@
 - 3 camas individuales en planta alta + 2 individuales en planta baja
 - Todos los servicios incluidos + ropa de cama
 
-Para fotos y más info: alquilertemporalgama.com
+Para fotos y más info: https://alquilertemporalgama.com
 
 ---
 

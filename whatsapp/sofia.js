@@ -67,6 +67,16 @@ function procesarComando(msg) {
   if (texto === '!activar')     { setPausa(chatId, 0);  console.log(`▶️  Activa para ${chatId}`);   return true; }
   if (texto === '!pausatodo')   { setPausaGlobal(1);    console.log('⏸  Pausada para TODOS');       return true; }
   if (texto === '!activartodo') { setPausaGlobal(0);    console.log('▶️  Activa para TODOS');        return true; }
+  if (texto === '!reiniciar') {
+    console.log('🔄 Reiniciando Sofía...');
+    setTimeout(() => process.exit(2), 1500);
+    return true;
+  }
+  if (texto === '!apagar') {
+    console.log('🛑 Apagando Sofía...');
+    setTimeout(() => process.exit(0), 1500);
+    return true;
+  }
   return false;
 }
 

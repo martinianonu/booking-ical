@@ -35,6 +35,68 @@ function obtenerHistorial(telefono, limite = 20) {
   `).all(telefono, limite).reverse();
 }
 
+// ── Sistema de pausa (control manual) ─────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS pausas (
+    telefono TEXT PRIMARY KEY,
+    pausado INTEGER DEFAULT 0
+  );
+  CREATE TABLE IF NOT EXISTS pausa_global (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    pausado INTEGER DEFAULT 0
+  );
+  INSERT OR IGNORE INTO pausa_global (id, pausado) VALUES (1, 0);
+`);
+
+function estaPausado(telefono) {
+  const global = db.prepare('SELECT pausado FROM pausa_global WHERE id = 1').get();
+  if (global?.pausado) return true;
+  const row = db.prepare('SELECT pausado FROM pausas WHERE telefono = ?').get(telefono);
+  return row?.pausado === 1;
+}
+
+function setPausa(telefono, valor) {
+  db.prepare('INSERT INTO pausas (telefono, pausado) VALUES (?, ?) ON CONFLICT(telefono) DO UPDATE SET pausado = ?')
+    .run(telefono, valor, valor);
+}
+
+function setPausaGlobal(valor) {
+  db.prepare('UPDATE pausa_global SET pausado = ? WHERE id = 1').run(valor);
+}
+
+// Procesa comandos del dueño (mensajes propios que empiezan con !)
+function procesarComando(msg) {
+  const texto = msg.body?.trim().toLowerCase();
+  const chatId = msg.to; // número del cliente en la conversación
+
+  if (texto === '!pausa') {
+    setPausa(chatId, 1);
+    console.log(`⏸  Sofía pausada para ${chatId}`);
+    return true;
+  }
+  if (texto === '!activar') {
+    setPausa(chatId, 0);
+    console.log(`▶️  Sofía activada para ${chatId}`);
+    return true;
+  }
+  if (texto === '!pausatodo') {
+    setPausaGlobal(1);
+    console.log('⏸  Sofía pausada para TODOS');
+    return true;
+  }
+  if (texto === '!activartodo') {
+    setPausaGlobal(0);
+    console.log('▶️  Sofía activada para TODOS');
+    return true;
+  }
+  if (texto === '!estado') {
+    const global = db.prepare('SELECT pausado FROM pausa_global WHERE id = 1').get();
+    console.log(`📊 Estado — Global: ${global?.pausado ? 'PAUSADA' : 'ACTIVA'}`);
+    return true;
+  }
+  return false;
+}
+
 // ── Leer knowledge base ────────────────────────────────────
 function cargarKnowledge() {
   const ruta = path.join(__dirname, '..', 'knowledge', 'gama-info.md');
@@ -163,11 +225,23 @@ client.on('ready', () => {
 });
 
 client.on('message', async (msg) => {
-  if (msg.isGroupMsg || msg.from === 'status@broadcast' || msg.fromMe) return;
+  if (msg.isGroupMsg || msg.from === 'status@broadcast') return;
+
+  // Mensajes propios: solo procesar comandos !
+  if (msg.fromMe) {
+    procesarComando(msg);
+    return;
+  }
 
   const telefono = msg.from;
   const texto = msg.body?.trim();
   if (!texto) return;
+
+  // Si está pausada para este contacto, no responder
+  if (estaPausado(telefono)) {
+    console.log(`⏸  Mensaje de ${telefono} ignorado (pausado)`);
+    return;
+  }
 
   console.log(`📩 ${telefono}: ${texto}`);
 

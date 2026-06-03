@@ -173,11 +173,18 @@ if (process.env.OPENAI_API_KEY) {
 }
 
 async function transcribirAudio(media) {
-  const tmpPath = path.join(os.tmpdir(), `audio_${Date.now()}.ogg`);
+  // WhatsApp envía PTT como audio/ogg;codecs=opus — Whisper acepta .ogg
+  const ext = media.mimetype.includes('mp4') ? 'mp4'
+            : media.mimetype.includes('webm') ? 'webm'
+            : media.mimetype.includes('mp3')  ? 'mp3'
+            : 'ogg';
+  const tmpPath = path.join(os.tmpdir(), `audio_${Date.now()}.${ext}`);
   fs.writeFileSync(tmpPath, Buffer.from(media.data, 'base64'));
+  console.log(`🎙 Transcribiendo: ${tmpPath} (${media.mimetype})`);
   try {
+    const { toFile } = require('openai');
     const resultado = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(tmpPath),
+      file: await toFile(fs.createReadStream(tmpPath), `audio.${ext}`, { type: media.mimetype.split(';')[0] }),
       model: 'whisper-1',
       language: 'es',
     });
@@ -552,7 +559,7 @@ client.on('message', async (msg) => {
       }
     } catch (err) {
       console.error('Error descargando/transcribiendo media:', err.message);
-      await msg.reply('No pude procesar el audio. ¿Podés escribirme? 📝');
+      await msg.reply('Hola 😊 No escuché bien el audio, ¿podés escribirme tu consulta?');
       return;
     }
   }

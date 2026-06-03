@@ -3,6 +3,7 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const Anthropic = require('@anthropic-ai/sdk');
 const Database = require('better-sqlite3');
+const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
@@ -34,40 +35,61 @@ function obtenerHistorial(telefono, limite = 20) {
   `).all(telefono, limite).reverse();
 }
 
+// ── Leer knowledge base ────────────────────────────────────
+function cargarKnowledge() {
+  const ruta = path.join(__dirname, '..', 'knowledge', 'gama-info.md');
+  try {
+    return fs.readFileSync(ruta, 'utf-8');
+  } catch {
+    return '';
+  }
+}
+
 // ── System prompt ──────────────────────────────────────────
-const SYSTEM_PROMPT = `Eres Sofía, la asistente virtual de GAMA Departamentos.
+function buildSystemPrompt() {
+  const knowledge = cargarKnowledge();
+  return `Eres Sofía, la asistente virtual de GAMA Departamentos. Respondés por WhatsApp.
 
-## Tu identidad
-- Te llamás Sofía, representás a GAMA Departamentos
-- Tono: empático, cálido y profesional
+## Estilo de comunicación
+- Cálida, amable y profesional — como una persona real, no un bot
+- Mensajes CORTOS y directos. WhatsApp no es un email.
+- Máximo 3-4 líneas por mensaje, salvo que el cliente pida más info
+- Usá emojis con moderación (1-2 por mensaje máximo)
+- NO hagas más de UNA pregunta por mensaje
+- Cuando tengas toda la info necesaria, confirmá y cerrá la reserva — no des vueltas
+- Si el cliente saluda, respondé el saludo Y ofrecé ayuda en el mismo mensaje
+- Si pregunta por disponibilidad sin dar fechas, pedí fechas Y cantidad de personas en UN solo mensaje
+- Si ya tenés fechas y personas, ofrecé opciones concretas de unidades — no preguntes más
 
-## Propiedades disponibles
-**Yrigoyen 487:** Dpto completo 2 hab, Dpto 2 hab (A y B), Duplex 2 hab (A y B)
-**Tierra del Fuego 109:** Dpto 1 hab (109 y A), Duplex 1 hab (109 A)
-**Gualeguay:** Suite 1 hab, Suite 2 hab + cochera (A y B)
+## Propiedades GAMA
+**Yrigoyen 487:** Dpto completo 2 hab | Dpto 2 hab A y B | Duplex 2 hab A y B
+**Tierra del Fuego 109:** Dpto 1 hab | Dpto 1 hab A | Duplex 1 hab A
+**Gualeguay:** Suite 1 hab | Suite 2 hab + cochera A y B
 
 ## Tipos de alquiler
-- **Temporario por día:** completamente equipado (WiFi, ropa de cama, cocina, baño). Ideal para viajeros.
-- **Fijo mensual:** disponibilidad variable, consultá.
+- **Temporario (por noche):** totalmente equipado — WiFi, ropa de cama, cocina completa, baño privado
+- **Fijo mensual:** disponibilidad variable
 
-## Para reservar necesitás
-1. Nombre completo
-2. Fechas de entrada y salida
-3. Cantidad de personas
-4. Zona preferida (opcional)
+## Para confirmar una reserva necesitás
+- Nombre completo, fechas entrada/salida, cantidad de personas
 
-## Reglas
-- Siempre en español, tono cálido y profesional
-- Una pregunta a la vez
-- Si no sabés el precio exacto: "Déjame verificarlo y te confirmo"
-- Nunca inventes precios ni disponibilidad
-- Si el cliente está frustrado: primero empatía, luego solución
-- Horario de atención: Lunes a Domingo 6:00 AM a 10:00 PM
-- Fuera de horario: "Gracias por escribirnos. Nuestro horario es L-D 6am a 10pm. Te respondemos pronto."`;
+## Horario
+Lunes a Domingo 6:00 AM a 10:00 PM.
+Fuera de horario: "Gracias por escribir a GAMA 🏠 Nuestro horario es L-D 6am-10pm. Te respondemos a la brevedad!"
+
+## Información del negocio
+${knowledge || '*(Completar el archivo knowledge/gama-info.md con precios y datos reales)*'}
+
+## Reglas importantes
+- Si no sabés el precio exacto: "Te confirmo el precio en un momento"
+- Nunca inventes datos que no están en la información del negocio
+- Si el cliente tiene un problema: primero empatía, luego solución`;
+}
 
 // ── Generar respuesta con Claude ───────────────────────────
 async function generarRespuesta(telefono, mensaje) {
   const historial = obtenerHistorial(telefono);
+  const systemPrompt = buildSystemPrompt();
 
   const mensajes = [
     ...historial.map(m => ({ role: m.role, content: m.content })),
@@ -77,8 +99,8 @@ async function generarRespuesta(telefono, mensaje) {
   try {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      max_tokens: 512,
+      system: systemPrompt,
       messages: mensajes
     });
     return response.content[0].text;
@@ -89,7 +111,6 @@ async function generarRespuesta(telefono, mensaje) {
 }
 
 // ── WhatsApp Client ────────────────────────────────────────
-// Busca Chrome instalado en Windows, Mac o Linux
 function buscarChrome() {
   const rutas = [
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -99,7 +120,6 @@ function buscarChrome() {
     '/usr/bin/google-chrome',
     '/usr/bin/chromium-browser',
   ];
-  const fs = require('fs');
   for (const ruta of rutas) {
     try { if (fs.existsSync(ruta)) return ruta; } catch {}
   }
@@ -126,10 +146,10 @@ client.on('qr', (qr) => {
   console.clear();
   console.log('\n================================================');
   console.log('   Sofía — GAMA Departamentos');
-  console.log('   Escaneá este QR con tu WhatsApp:');
+  console.log('   Escaneá este QR con tu celular:');
   console.log('================================================\n');
   qrcode.generate(qr, { small: true });
-  console.log('\n  En tu celular: WhatsApp → ⋮ → Dispositivos vinculados → Vincular dispositivo\n');
+  console.log('\n  WhatsApp → ⋮ → Dispositivos vinculados → Vincular dispositivo\n');
 });
 
 client.on('authenticated', () => {
@@ -138,14 +158,11 @@ client.on('authenticated', () => {
 
 client.on('ready', () => {
   console.log('\n================================================');
-  console.log('   ✅ Sofía está en línea y lista para responder');
-  console.log('   Negocio: GAMA Departamentos');
-  console.log('   Modelo: claude-sonnet-4-6');
+  console.log('   ✅ Sofía está en línea — GAMA Departamentos');
   console.log('================================================\n');
 });
 
 client.on('message', async (msg) => {
-  // Ignorar mensajes grupales, de estado y propios
   if (msg.isGroupMsg || msg.from === 'status@broadcast' || msg.fromMe) return;
 
   const telefono = msg.from;
@@ -156,12 +173,10 @@ client.on('message', async (msg) => {
 
   try {
     const respuesta = await generarRespuesta(telefono, texto);
-
     guardarMensaje(telefono, 'user', texto);
     guardarMensaje(telefono, 'assistant', respuesta);
-
     await msg.reply(respuesta);
-    console.log(`💬 Sofía → ${telefono}: ${respuesta.substring(0, 80)}...`);
+    console.log(`💬 Sofía: ${respuesta.substring(0, 80)}...`);
   } catch (err) {
     console.error('Error procesando mensaje:', err.message);
   }

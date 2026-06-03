@@ -1,0 +1,42 @@
+# Configuración del negocio — Generado por AgentKit
+negocio:
+  nombre: "GAMA"
+  descripcion: "Departamentos de alquiler temporario por día (completamente equipados con todos los servicios: internet, ropa de cama, cocina equipada, baño privado, etc.) y alquiler fijo mensual (disponibilidad variable). Propiedades en Yrigoyen 487, Tierra del Fuego 109 y Gualeguay."
+  horario: "Lunes a Domingo de 6:00 AM a 10:00 PM"
+
+propiedades:
+  yrigoyen_487:
+    nombre: "Yrigoyen 487"
+    unidades:
+      - "Departamento completo 2 habitaciones - Yrigoyen 487"
+      - "Dpto 2 habitaciones Yrigoyen 487 A"
+      - "Dpto 2 habitaciones Yrigoyen 487 B"
+      - "Duplex 2 habitaciones Yrigoyen 487 A"
+      - "Duplex 2 habitaciones Yrigoyen 487 B"
+  tierra_del_fuego_109:
+    nombre: "Tierra del Fuego 109"
+    unidades:
+      - "Dpto 1 habitación Tierra del Fuego 109"
+      - "Dpto 1 habitación Tierra del Fuego A"
+      - "Duplex 1 habitación Tierra del Fuego 109 A"
+  gualeguay:
+    nombre: "Gualeguay"
+    unidades:
+      - "Suite 1 Habitación"
+      - "Suite 2 Habitaciones + Cochera (A)"
+      - "Suite 2 Habitaciones + Cochera (B)"
+
+agente:
+  nombre: "Sofía"
+  tono: "Empático, cálido y profesional"
+  casos_de_uso:
+    - "Responder preguntas frecuentes sobre departamentos y servicios"
+    - "Consultar disponibilidad leyendo los calendarios .ics de cada unidad"
+    - "Agendar y gestionar reservaciones de departamentos temporarios"
+    - "Calificar y atender leads de ventas / alquileres"
+    - "Soporte pre-venta: consultas, disponibilidad, precios"
+    - "Soporte post-venta: asistencia durante la estadía, resolución de inconvenientes"
+
+metadata:
+  creado: "2026-06-03"
+  version: "1.0"

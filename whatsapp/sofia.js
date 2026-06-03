@@ -89,10 +89,35 @@ async function generarRespuesta(telefono, mensaje) {
 }
 
 // ── WhatsApp Client ────────────────────────────────────────
+// Busca Chrome instalado en Windows, Mac o Linux
+function buscarChrome() {
+  const rutas = [
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    process.env.LOCALAPPDATA + '\\Google\\Chrome\\Application\\chrome.exe',
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium-browser',
+  ];
+  const fs = require('fs');
+  for (const ruta of rutas) {
+    try { if (fs.existsSync(ruta)) return ruta; } catch {}
+  }
+  return null;
+}
+
+const chromeExecutable = buscarChrome();
+if (chromeExecutable) {
+  console.log('Usando Chrome:', chromeExecutable);
+} else {
+  console.log('Chrome del sistema no encontrado, usando puppeteer bundled');
+}
+
 const client = new Client({
   authStrategy: new LocalAuth({ dataPath: path.join(__dirname, '.wwebjs_auth') }),
   puppeteer: {
     headless: true,
+    executablePath: chromeExecutable || undefined,
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
   }
 });

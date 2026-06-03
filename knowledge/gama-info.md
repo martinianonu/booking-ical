@@ -30,7 +30,7 @@ Para fotos y más info: alquilertemporalgama.com
 | Dpto A o B       | $65.000    | $80.000    | $105.000               |
 
 **Persona extra** (a partir de la 3ra persona): +$10.000 por noche/persona
-**Tasa de limpieza**: $20.000 fija por estadía (una sola vez, no por noche)
+**Limpieza extra**: $20.000 por servicio, solo si el huésped lo solicita durante la estadía (no es un cargo automático)
 
 ### Tarifa corporativa (clientes recurrentes)
 - Tierra del Fuego: $48.000/noche

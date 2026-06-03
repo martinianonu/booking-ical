@@ -71,13 +71,57 @@ async function consultarDisponibilidad() {
   return resultado;
 }
 
-function disponibilidadTexto(calendarios, entrada, salida) {
-  if (!entrada || !salida) return '';
-  const lineas = ['\n## DISPONIBILIDAD REAL (Booking.com — verificada ahora)'];
-  for (const [nombre, eventos] of Object.entries(calendarios)) {
-    const ocupado = estaOcupado(eventos, entrada, salida);
-    lineas.push(`${ocupado ? '❌ OCUPADO' : '✅ DISPONIBLE'}: ${nombre}`);
+function proximaFechaLibre(eventos, desde, noches = 2) {
+  // Busca el próximo hueco disponible de al menos 'noches' días, hasta 60 días adelante
+  const MAX_DIAS = 60;
+  let candidato = new Date(desde);
+  candidato.setDate(candidato.getDate() + 1); // empieza al día siguiente
+
+  for (let i = 0; i < MAX_DIAS; i++) {
+    const fin = new Date(candidato);
+    fin.setDate(fin.getDate() + noches);
+    if (!estaOcupado(eventos, candidato, fin)) {
+      const fmt = d => d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+      return `${fmt(candidato)} al ${fmt(fin)}`;
+    }
+    candidato.setDate(candidato.getDate() + 1);
   }
+  return null;
+}
+
+function detectarUnidad(texto) {
+  const t = texto.toLowerCase();
+  if (t.includes('tierra del fuego') || t.includes('tdf') || t.includes('tierra')) return 'Tierra del Fuego';
+  if (t.includes('depto b') || t.includes('dpto b') || t.includes('departamento b') || t.includes('unidad b')) return 'Depto B';
+  if (t.includes('depto a') || t.includes('dpto a') || t.includes('departamento a') || t.includes('unidad a')) return 'Depto A';
+  return null; // no especificó
+}
+
+function disponibilidadTexto(calendarios, entrada, salida, unidadSolicitada) {
+  if (!entrada || !salida) return '';
+  const noches = Math.round((salida - entrada) / (1000 * 60 * 60 * 24));
+  const lineas = ['\n## DISPONIBILIDAD REAL (Booking.com — verificada ahora mismo)'];
+  lineas.push(`Fechas consultadas: ${entrada.toLocaleDateString('es-AR')} → ${salida.toLocaleDateString('es-AR')} (${noches} noche${noches !== 1 ? 's' : ''})`);
+
+  for (const [nombre, eventos] of Object.entries(calendarios)) {
+    // Si el cliente pidió una unidad específica, solo mostrar esa
+    if (unidadSolicitada && nombre !== unidadSolicitada) continue;
+
+    const ocupado = estaOcupado(eventos, entrada, salida);
+    if (ocupado) {
+      const proxima = proximaFechaLibre(eventos, salida, noches);
+      lineas.push(`❌ ${nombre}: OCUPADO para esas fechas.`);
+      if (proxima) {
+        lineas.push(`   → Próxima disponibilidad para ${nombre}: ${proxima}`);
+      } else {
+        lineas.push(`   → No hay disponibilidad en los próximos 60 días para ${nombre}.`);
+      }
+    } else {
+      lineas.push(`✅ ${nombre}: DISPONIBLE para esas fechas.`);
+    }
+  }
+
+  lineas.push('\nIMPORTANTE: Usá esta info para responder. Si está ocupado, ofrecé la fecha alternativa indicada arriba.');
   return lineas.join('\n');
 }
 
@@ -371,9 +415,12 @@ async function generarRespuesta(telefono, mensaje) {
   if (fechas) {
     console.log(`🔍 Verificando disponibilidad: ${fechas.entrada.toLocaleDateString()} → ${fechas.salida.toLocaleDateString()}`);
     const calendarios = await consultarDisponibilidad();
-    contextoDisponibilidad = disponibilidadTexto(calendarios, fechas.entrada, fechas.salida);
+    // Detectar si el cliente pidió una unidad específica (también revisando historial)
+    const textoCompleto = [...historial.map(m => m.content), mensaje].join(' ');
+    const unidadSolicitada = detectarUnidad(textoCompleto);
+    contextoDisponibilidad = disponibilidadTexto(calendarios, fechas.entrada, fechas.salida, unidadSolicitada);
+    console.log(contextoDisponibilidad);
   } else {
-    // Igual cargamos el calendario en background para tenerlo cacheado
     consultarDisponibilidad().catch(() => {});
   }
 

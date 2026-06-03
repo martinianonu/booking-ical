@@ -1,0 +1,47 @@
+================================================
+   SOFIA — Agente WhatsApp de GAMA Departamentos
+================================================
+
+REQUISITOS:
+  - Node.js 18 o superior (descargar en nodejs.org)
+  - Tu computadora conectada a internet
+
+PASOS PARA ARRANCAR:
+
+1. Abrí una terminal en esta carpeta (whatsapp/)
+
+2. Instalá las dependencias (una sola vez):
+      npm install
+
+3. Editá el archivo ../.env con tus datos reales:
+      ANTHROPIC_API_KEY=sk-ant-api03-...  ← tu key de Anthropic
+      TWILIO_ACCOUNT_SID=...              ← no se usa, podés dejarlo
+      TWILIO_AUTH_TOKEN=...               ← no se usa, podés dejarlo
+
+4. Arrancá Sofía:
+      npm start
+      (o:  node sofia.js)
+
+5. Aparece un QR en la pantalla.
+   En tu celular: WhatsApp → ⋮ → Dispositivos vinculados → Vincular dispositivo
+   Escaneá el QR.
+
+6. ¡Listo! Sofía empieza a responder mensajes de WhatsApp automaticamente.
+
+NOTAS:
+  - La sesión de WhatsApp queda guardada en .wwebjs_auth/
+  - La próxima vez que arranques NO pide QR (ya está autenticado)
+  - Si querés cerrar la sesión: borrá la carpeta .wwebjs_auth/
+  - Sofía tiene memoria: recuerda las conversaciones previas (sofia.db)
+
+PARA CORRER SIEMPRE EN SEGUNDO PLANO (Windows):
+  npm install -g pm2
+  pm2 start sofia.js --name sofia
+  pm2 startup   ← para que arranque solo al reiniciar la PC
+
+PARA CORRER SIEMPRE EN SEGUNDO PLANO (Mac/Linux):
+  npm install -g pm2
+  pm2 start sofia.js --name sofia
+  pm2 save
+  pm2 startup
+================================================

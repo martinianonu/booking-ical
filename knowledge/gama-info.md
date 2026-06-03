@@ -1,78 +1,76 @@
-# ================================================
-# GAMA DEPARTAMENTOS — Información para Sofía
-# ================================================
-# Editá este archivo con los datos reales de tu negocio.
-# Sofía lo lee automáticamente cada vez que arranca.
-# ================================================
+# GAMA DEPARTAMENTOS — Base de conocimiento de Sofía
+# Gualeguay — alquilertemporalgama.com
 
-## PRECIOS
+## PROPIEDADES
 
-### Temporario (por noche)
-- Dpto 1 habitación (Tierra del Fuego): $XX por noche
-- Dpto 2 habitaciones (Yrigoyen 487 A/B): $XX por noche
-- Dpto completo 2 hab (Yrigoyen 487): $XX por noche
-- Duplex 1 habitación: $XX por noche
-- Duplex 2 habitaciones: $XX por noche
-- Suite 1 hab (Gualeguay): $XX por noche
-- Suite 2 hab + cochera (Gualeguay): $XX por noche
+### Deptos A y B (Yrigoyen 487)
+- 2 habitaciones en planta alta (1 cama matrimonial + 2 individuales)
+- Capacidad: hasta 5 personas
+- Baño completo en planta alta
+- Living-comedor en planta baja
+- Cocina equipada
+- Cochera privada 3x2
+- Todos los servicios incluidos + ropa de cama
 
-*Descuentos: estadías de 7+ noches tienen 10% de descuento*
+### Tierra del Fuego
+- 1 habitación en planta alta con baño
+- Living-comedor + cocina en planta baja
+- 3 camas individuales en planta alta + 2 individuales en planta baja
+- Todos los servicios incluidos + ropa de cama
 
-### Fijo mensual
-- Consultar disponibilidad y precio según unidad
+Para fotos y más info: alquilertemporalgama.com
 
-## CHECK-IN / CHECK-OUT
-- Check-in: a partir de las 14:00 hs
-- Check-out: hasta las 11:00 hs
-- Check-in tardío (después de las 20:00): coordinarlo con anticipación
+---
 
-## QUÉ INCLUYE
-- WiFi de alta velocidad
-- Ropa de cama y toallas (cambio cada X días en estadías largas)
-- Cocina totalmente equipada (heladera, microondas, hornallas, utensilios)
-- TV con cable/smart
-- Aire acondicionado / calefacción
-- Baño privado con artículos de tocador básicos
+## TARIFAS (en pesos argentinos)
 
-## REGLAS
-- No se permiten mascotas
-- No se permiten fiestas ni eventos
-- No fumar dentro del departamento
-- Capacidad máxima según el departamento (no se aceptan más personas)
-- Depósito de garantía: $XX (se devuelve al checkout si no hay daños)
+| Unidad           | Lun-Jue    | Vie-Dom    | Temporada Alta/Eventos |
+|------------------|------------|------------|------------------------|
+| Tierra del Fuego | $55.000    | $65.000    | $85.000                |
+| Dpto A o B       | $65.000    | $80.000    | $105.000               |
 
-## FORMA DE PAGO
-- Transferencia bancaria
-- Efectivo
-- *Completar con tus métodos de pago reales*
+**Persona extra** (a partir de la 3ra persona): +$10.000 por noche/persona
+**Tasa de limpieza**: $20.000 fija por estadía (una sola vez, no por noche)
+
+### Tarifa corporativa (clientes recurrentes)
+- Tierra del Fuego: $48.000/noche
+- Dpto A o B: $58.000/noche
+- Condición: máximo 2 personas. Más de 2: +$10.000/persona extra
+
+### Descuentos por estadía larga
+- 7 noches o más: 20% de descuento
+- 14 noches o más: 30% de descuento
+
+---
 
 ## CÓMO RESERVAR
-1. El cliente confirma fechas y unidad
-2. Se cobra el 50% como seña para confirmar
-3. El saldo restante se paga al check-in
 
-## CONTACTO PARA URGENCIAS
-- Teléfono: +549XXXXXXXXXX
-- Disponible: Lunes a Domingo 6:00 AM a 10:00 PM
+1. El cliente elige la unidad y confirma las fechas
+2. Sofía calcula el total e informa la seña (20% del total)
+3. El cliente transfiere la seña al alias: **gamaal.mp**
+4. El cliente envía el comprobante al: **+54 9 3444 53-2516**
+5. Sofía solicita los datos completos del huésped
+6. Se notifica al equipo de administración
 
-## UBICACIONES
-- **Yrigoyen 487** — [barrio/ciudad]
-- **Tierra del Fuego 109** — [barrio/ciudad]
-- **Gualeguay** — [barrio/ciudad]
+**Datos obligatorios para cerrar la reserva:**
+- Nombre y apellido
+- Teléfono de contacto
+- Departamento elegido
+- Fecha de entrada y salida
+- Número de huéspedes
 
-## PREGUNTAS FRECUENTES
+---
 
-**¿Dónde están ubicados?**
-*Completar con dirección o zona exacta*
+## ALQUILER FIJO MENSUAL
+Si el cliente consulta por alquiler fijo (no temporal), pedirle:
+- Nombre y apellido
+- Cantidad de personas
+- Fecha aproximada de ingreso
+Responder: "Anotamos tu consulta y te brindamos la info disponible a la brevedad."
 
-**¿Tienen estacionamiento?**
-Las Suites de Gualeguay incluyen cochera. Los demás consultar disponibilidad.
+---
 
-**¿Se puede pagar en cuotas?**
-*Completar según tu política*
-
-**¿Aceptan niños?**
-Sí, los departamentos son aptos para familias.
-
-**¿Tienen Wi-Fi?**
-Sí, todos los departamentos incluyen WiFi de alta velocidad sin costo adicional.
+## IMPORTANTE
+- Las unidades se alquilan SIEMPRE completas, nunca por persona
+- Destacar siempre: seguridad, cochera privada (A y B), propiedades en estado impecable
+- Verificar disponibilidad antes de confirmar (los calendarios .ics se actualizan automáticamente)

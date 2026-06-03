@@ -21,22 +21,6 @@ db.exec(`
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
   );
   CREATE INDEX IF NOT EXISTS idx_telefono ON mensajes(telefono);
-`);
-
-function guardarMensaje(telefono, role, content) {
-  db.prepare('INSERT INTO mensajes (telefono, role, content) VALUES (?, ?, ?)').run(telefono, role, content);
-}
-
-function obtenerHistorial(telefono, limite = 20) {
-  return db.prepare(`
-    SELECT role, content FROM mensajes
-    WHERE telefono = ?
-    ORDER BY timestamp DESC LIMIT ?
-  `).all(telefono, limite).reverse();
-}
-
-// ── Sistema de pausa (control manual) ─────────────────────
-db.exec(`
   CREATE TABLE IF NOT EXISTS pausas (
     telefono TEXT PRIMARY KEY,
     pausado INTEGER DEFAULT 0
@@ -48,6 +32,18 @@ db.exec(`
   INSERT OR IGNORE INTO pausa_global (id, pausado) VALUES (1, 0);
 `);
 
+function guardarMensaje(telefono, role, content) {
+  db.prepare('INSERT INTO mensajes (telefono, role, content) VALUES (?, ?, ?)').run(telefono, role, content);
+}
+
+function obtenerHistorial(telefono, limite = 20) {
+  return db.prepare(`
+    SELECT role, content FROM mensajes
+    WHERE telefono = ? ORDER BY timestamp DESC LIMIT ?
+  `).all(telefono, limite).reverse();
+}
+
+// ── Sistema de pausa ───────────────────────────────────────
 function estaPausado(telefono) {
   const global = db.prepare('SELECT pausado FROM pausa_global WHERE id = 1').get();
   if (global?.pausado) return true;
@@ -64,105 +60,98 @@ function setPausaGlobal(valor) {
   db.prepare('UPDATE pausa_global SET pausado = ? WHERE id = 1').run(valor);
 }
 
-// Procesa comandos del dueño (mensajes propios que empiezan con !)
 function procesarComando(msg) {
   const texto = msg.body?.trim().toLowerCase();
-  const chatId = msg.to; // número del cliente en la conversación
-
-  if (texto === '!pausa') {
-    setPausa(chatId, 1);
-    console.log(`⏸  Sofía pausada para ${chatId}`);
-    return true;
-  }
-  if (texto === '!activar') {
-    setPausa(chatId, 0);
-    console.log(`▶️  Sofía activada para ${chatId}`);
-    return true;
-  }
-  if (texto === '!pausatodo') {
-    setPausaGlobal(1);
-    console.log('⏸  Sofía pausada para TODOS');
-    return true;
-  }
-  if (texto === '!activartodo') {
-    setPausaGlobal(0);
-    console.log('▶️  Sofía activada para TODOS');
-    return true;
-  }
-  if (texto === '!estado') {
-    const global = db.prepare('SELECT pausado FROM pausa_global WHERE id = 1').get();
-    console.log(`📊 Estado — Global: ${global?.pausado ? 'PAUSADA' : 'ACTIVA'}`);
-    return true;
-  }
+  const chatId = msg.to;
+  if (texto === '!pausa')       { setPausa(chatId, 1);  console.log(`⏸  Pausada para ${chatId}`);  return true; }
+  if (texto === '!activar')     { setPausa(chatId, 0);  console.log(`▶️  Activa para ${chatId}`);   return true; }
+  if (texto === '!pausatodo')   { setPausaGlobal(1);    console.log('⏸  Pausada para TODOS');       return true; }
+  if (texto === '!activartodo') { setPausaGlobal(0);    console.log('▶️  Activa para TODOS');        return true; }
   return false;
 }
 
 // ── Leer knowledge base ────────────────────────────────────
 function cargarKnowledge() {
-  const ruta = path.join(__dirname, '..', 'knowledge', 'gama-info.md');
   try {
-    return fs.readFileSync(ruta, 'utf-8');
-  } catch {
-    return '';
-  }
+    return fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gama-info.md'), 'utf-8');
+  } catch { return ''; }
 }
 
 // ── System prompt ──────────────────────────────────────────
 function buildSystemPrompt() {
   const knowledge = cargarKnowledge();
-  return `Eres Sofía, la asistente virtual de GAMA Departamentos. Respondés por WhatsApp.
+  return `Eres Sofía, agente comercial exclusiva de GAMA Departamentos, Gualeguay. Respondés por WhatsApp.
 
-## Estilo de comunicación
-- Cálida, amable y profesional — como una persona real, no un bot
-- Mensajes CORTOS y directos. WhatsApp no es un email.
-- Máximo 3-4 líneas por mensaje, salvo que el cliente pida más info
-- Usá emojis con moderación (1-2 por mensaje máximo)
-- NO hagas más de UNA pregunta por mensaje
-- Cuando tengas toda la info necesaria, confirmá y cerrá la reserva — no des vueltas
-- Si el cliente saluda, respondé el saludo Y ofrecé ayuda en el mismo mensaje
-- Si pregunta por disponibilidad sin dar fechas, pedí fechas Y cantidad de personas en UN solo mensaje
-- Si ya tenés fechas y personas, ofrecé opciones concretas de unidades — no preguntes más
+## ESTILO DE COMUNICACIÓN
+- Mensajes CORTOS (máximo 4 líneas). WhatsApp no es un email.
+- Tono: profesional, cálido, exclusivo — como una persona real
+- Máximo 1-2 emojis por mensaje
+- UNA sola pregunta por mensaje
+- Cuando tenés todos los datos, cerrás la reserva directo sin dar más vueltas
 
-## Propiedades GAMA
-**Yrigoyen 487:** Dpto completo 2 hab | Dpto 2 hab A y B | Duplex 2 hab A y B
-**Tierra del Fuego 109:** Dpto 1 hab | Dpto 1 hab A | Duplex 1 hab A
-**Gualeguay:** Suite 1 hab | Suite 2 hab + cochera A y B
+## REGLAS DE ORO
+1. Las unidades se alquilan SIEMPRE completas — nunca cotices "por persona"
+2. Verificá disponibilidad antes de confirmar (mencioná que lo verificás)
+3. Destacá siempre: seguridad, cochera privada (A y B), propiedades en estado impecable
+4. Para reservar más de una noche: seña del 20% por transferencia al alias **gamaal.mp**
+5. El comprobante se envía al: **+54 9 3444 53-2516**
+6. Cuando tengas TODOS los datos de reserva confirmados (nombre, fechas, unidad, huéspedes, seña abonada), incluí al FINAL de tu respuesta exactamente este bloque (no lo muestres al cliente, es solo para el sistema):
+   [[RESERVA_CONFIRMADA: propiedad=X | fechas=X | huespedes=X | nombre=X | estado_pago=seña abonada]]
 
-## Tipos de alquiler
-- **Temporario (por noche):** totalmente equipado — WiFi, ropa de cama, cocina completa, baño privado
-- **Fijo mensual:** disponibilidad variable
+## DATOS REQUERIDOS PARA CERRAR RESERVA
+- Nombre y apellido
+- Teléfono de contacto
+- Departamento elegido
+- Fechas de entrada y salida
+- Número de huéspedes
 
-## Para confirmar una reserva necesitás
-- Nombre completo, fechas entrada/salida, cantidad de personas
+## ALQUILER FIJO
+Si consultan por alquiler fijo mensual: pediles nombre, apellido, cantidad de personas y fecha aproximada de ingreso. Decí: "Anotamos tu consulta y te brindamos la info disponible a la brevedad."
 
-## Horario
+## HORARIO
 Lunes a Domingo 6:00 AM a 10:00 PM.
-Fuera de horario: "Gracias por escribir a GAMA 🏠 Nuestro horario es L-D 6am-10pm. Te respondemos a la brevedad!"
+Fuera de horario: "Gracias por escribirnos 🏠 Nuestro horario es L-D 6am-10pm. Te respondemos a la brevedad."
 
-## Información del negocio
-${knowledge || '*(Completar el archivo knowledge/gama-info.md con precios y datos reales)*'}
+## INFORMACIÓN DEL NEGOCIO
+${knowledge}`;
+}
 
-## Reglas importantes
-- Si no sabés el precio exacto: "Te confirmo el precio en un momento"
-- Nunca inventes datos que no están en la información del negocio
-- Si el cliente tiene un problema: primero empatía, luego solución`;
+// ── Notificación al administrador ──────────────────────────
+const ADMIN_NUMBER = '5493444532537@c.us'; // +54 9 3444 53-2537
+
+async function notificarAdmin(datosReserva, telefonoCliente) {
+  try {
+    const msg = `🏠 *NUEVA RESERVA CONFIRMADA — GAMA*\n\n${datosReserva}\n\n📱 Cliente: ${telefonoCliente}`;
+    await client.sendMessage(ADMIN_NUMBER, msg);
+    console.log('📨 Notificación enviada al admin');
+  } catch (err) {
+    console.error('Error notificando admin:', err.message);
+  }
+}
+
+function extraerNotificacion(respuesta) {
+  const match = respuesta.match(/\[\[RESERVA_CONFIRMADA:(.*?)\]\]/s);
+  if (match) {
+    return {
+      datos: match[1].trim(),
+      textoLimpio: respuesta.replace(/\[\[RESERVA_CONFIRMADA:.*?\]\]/s, '').trim()
+    };
+  }
+  return null;
 }
 
 // ── Generar respuesta con Claude ───────────────────────────
 async function generarRespuesta(telefono, mensaje) {
   const historial = obtenerHistorial(telefono);
-  const systemPrompt = buildSystemPrompt();
-
   const mensajes = [
     ...historial.map(m => ({ role: m.role, content: m.content })),
     { role: 'user', content: mensaje }
   ];
-
   try {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 512,
-      system: systemPrompt,
+      max_tokens: 600,
+      system: buildSystemPrompt(),
       messages: mensajes
     });
     return response.content[0].text;
@@ -177,7 +166,7 @@ function buscarChrome() {
   const rutas = [
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-    process.env.LOCALAPPDATA + '\\Google\\Chrome\\Application\\chrome.exe',
+    (process.env.LOCALAPPDATA || '') + '\\Google\\Chrome\\Application\\chrome.exe',
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     '/usr/bin/google-chrome',
     '/usr/bin/chromium-browser',
@@ -189,11 +178,7 @@ function buscarChrome() {
 }
 
 const chromeExecutable = buscarChrome();
-if (chromeExecutable) {
-  console.log('Usando Chrome:', chromeExecutable);
-} else {
-  console.log('Chrome del sistema no encontrado, usando puppeteer bundled');
-}
+if (chromeExecutable) console.log('Usando Chrome:', chromeExecutable);
 
 const client = new Client({
   authStrategy: new LocalAuth({ dataPath: path.join(__dirname, '.wwebjs_auth') }),
@@ -214,20 +199,18 @@ client.on('qr', (qr) => {
   console.log('\n  WhatsApp → ⋮ → Dispositivos vinculados → Vincular dispositivo\n');
 });
 
-client.on('authenticated', () => {
-  console.log('\n✅ WhatsApp autenticado correctamente');
-});
+client.on('authenticated', () => console.log('\n✅ WhatsApp autenticado'));
 
 client.on('ready', () => {
   console.log('\n================================================');
   console.log('   ✅ Sofía está en línea — GAMA Departamentos');
+  console.log('   Comandos: !pausa | !activar | !pausatodo | !activartodo');
   console.log('================================================\n');
 });
 
 client.on('message', async (msg) => {
   if (msg.isGroupMsg || msg.from === 'status@broadcast') return;
 
-  // Mensajes propios: solo procesar comandos !
   if (msg.fromMe) {
     procesarComando(msg);
     return;
@@ -237,20 +220,29 @@ client.on('message', async (msg) => {
   const texto = msg.body?.trim();
   if (!texto) return;
 
-  // Si está pausada para este contacto, no responder
   if (estaPausado(telefono)) {
-    console.log(`⏸  Mensaje de ${telefono} ignorado (pausado)`);
+    console.log(`⏸  Ignorado (pausado): ${telefono}`);
     return;
   }
 
   console.log(`📩 ${telefono}: ${texto}`);
 
   try {
-    const respuesta = await generarRespuesta(telefono, texto);
+    const respuestaRaw = await generarRespuesta(telefono, texto);
+
+    // Detectar si hay una reserva confirmada para notificar al admin
+    const notif = extraerNotificacion(respuestaRaw);
+    const respuesta = notif ? notif.textoLimpio : respuestaRaw;
+
     guardarMensaje(telefono, 'user', texto);
     guardarMensaje(telefono, 'assistant', respuesta);
+
     await msg.reply(respuesta);
     console.log(`💬 Sofía: ${respuesta.substring(0, 80)}...`);
+
+    if (notif) {
+      await notificarAdmin(notif.datos, telefono);
+    }
   } catch (err) {
     console.error('Error procesando mensaje:', err.message);
   }

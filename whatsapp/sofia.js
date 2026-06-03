@@ -3,9 +3,114 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const Anthropic = require('@anthropic-ai/sdk');
 const Database = require('better-sqlite3');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
+// ── Calendarios Booking.com ────────────────────────────────
+const CALENDARIOS = {
+  'Depto A':          'https://ical.booking.com/v1/export?t=18fa0402-6e0b-4ea5-af96-8fc518f0b968',
+  'Tierra del Fuego': 'https://ical.booking.com/v1/export?t=428cf286-d6d0-4a59-a8c4-4558afb6cf86',
+  'Depto B':          'https://ical.booking.com/v1/export?t=75a5d696-07bf-4a38-8f70-28020215ccfd',
+};
+
+// Cache para no llamar a Booking en cada mensaje (5 minutos)
+const cache = { data: null, ts: 0 };
+const CACHE_MS = 5 * 60 * 1000;
+
+function fetchUrl(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, res => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve(data));
+    }).on('error', reject);
+  });
+}
+
+function parsearEventos(ical) {
+  const eventos = [];
+  const texto = ical.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const bloques = texto.split('BEGIN:VEVENT');
+  for (const bloque of bloques.slice(1)) {
+    const inicio = bloque.match(/DTSTART[^:]*:(\d{8})/);
+    const fin    = bloque.match(/DTEND[^:]*:(\d{8})/);
+    if (inicio && fin) {
+      const toDate = s => new Date(s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8));
+      eventos.push({ inicio: toDate(inicio[1]), fin: toDate(fin[1]) });
+    }
+  }
+  return eventos;
+}
+
+function estaOcupado(eventos, entrada, salida) {
+  return eventos.some(e => e.inicio < salida && e.fin > entrada);
+}
+
+async function consultarDisponibilidad() {
+  const ahora = Date.now();
+  if (cache.data && ahora - cache.ts < CACHE_MS) return cache.data;
+
+  const resultado = {};
+  await Promise.all(
+    Object.entries(CALENDARIOS).map(async ([nombre, url]) => {
+      try {
+        const ical = await fetchUrl(url);
+        resultado[nombre] = parsearEventos(ical);
+        console.log(`📅 ${nombre}: ${resultado[nombre].length} reservas cargadas`);
+      } catch (err) {
+        console.error(`Error cargando calendario ${nombre}:`, err.message);
+        resultado[nombre] = [];
+      }
+    })
+  );
+
+  cache.data = resultado;
+  cache.ts = ahora;
+  return resultado;
+}
+
+function disponibilidadTexto(calendarios, entrada, salida) {
+  if (!entrada || !salida) return '';
+  const lineas = ['\n## DISPONIBILIDAD REAL (Booking.com — verificada ahora)'];
+  for (const [nombre, eventos] of Object.entries(calendarios)) {
+    const ocupado = estaOcupado(eventos, entrada, salida);
+    lineas.push(`${ocupado ? '❌ OCUPADO' : '✅ DISPONIBLE'}: ${nombre}`);
+  }
+  return lineas.join('\n');
+}
+
+// Extrae fechas mencionadas en el mensaje (formato DD/MM o "lunes 9", etc.)
+function extraerFechas(texto) {
+  // Busca patrones como "10 al 15 de junio", "del 10/06 al 15/06", "viernes 20 al domingo 22"
+  const meses = { enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,octubre:10,noviembre:11,diciembre:12 };
+
+  // Patrón: "del X al Y de mes" o "X al Y de mes"
+  const m1 = texto.match(/(\d{1,2})\s+al\s+(\d{1,2})\s+de\s+(\w+)/i);
+  if (m1) {
+    const mes = meses[m1[3].toLowerCase()];
+    if (mes) {
+      const año = new Date().getFullYear();
+      return {
+        entrada: new Date(año, mes-1, parseInt(m1[1])),
+        salida:  new Date(año, mes-1, parseInt(m1[2]))
+      };
+    }
+  }
+
+  // Patrón: "DD/MM al DD/MM" o "DD/MM"
+  const m2 = texto.match(/(\d{1,2})\/(\d{1,2}).*?al.*?(\d{1,2})\/(\d{1,2})/);
+  if (m2) {
+    const año = new Date().getFullYear();
+    return {
+      entrada: new Date(año, parseInt(m2[2])-1, parseInt(m2[1])),
+      salida:  new Date(año, parseInt(m2[4])-1, parseInt(m2[3]))
+    };
+  }
+
+  return null;
+}
 
 // ── Claude AI ──────────────────────────────────────────────
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -259,10 +364,29 @@ function extraerNotificacion(respuesta) {
 // ── Generar respuesta con Claude ───────────────────────────
 async function generarRespuesta(telefono, mensaje) {
   const historial = obtenerHistorial(telefono);
+
+  // Verificar disponibilidad si el mensaje menciona fechas
+  let contextoDisponibilidad = '';
+  const fechas = extraerFechas(mensaje);
+  if (fechas) {
+    console.log(`🔍 Verificando disponibilidad: ${fechas.entrada.toLocaleDateString()} → ${fechas.salida.toLocaleDateString()}`);
+    const calendarios = await consultarDisponibilidad();
+    contextoDisponibilidad = disponibilidadTexto(calendarios, fechas.entrada, fechas.salida);
+  } else {
+    // Igual cargamos el calendario en background para tenerlo cacheado
+    consultarDisponibilidad().catch(() => {});
+  }
+
   const mensajes = [
     ...historial.map(m => ({ role: m.role, content: m.content })),
-    { role: 'user', content: mensaje }
+    {
+      role: 'user',
+      content: contextoDisponibilidad
+        ? `${mensaje}\n\n[SISTEMA: ${contextoDisponibilidad}]`
+        : mensaje
+    }
   ];
+
   try {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',

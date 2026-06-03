@@ -1,0 +1,14 @@
+{
+  "tdf_semana": 55000,
+  "tdf_finde": 65000,
+  "tdf_alta": 85000,
+  "tdf_corporativo": 48000,
+  "ab_semana": 65000,
+  "ab_finde": 80000,
+  "ab_alta": 105000,
+  "ab_corporativo": 58000,
+  "persona_extra": 10000,
+  "limpieza_extra": 20000,
+  "descuento_7_noches": 20,
+  "descuento_14_noches": 30
+}

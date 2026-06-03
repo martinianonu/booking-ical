@@ -67,6 +67,17 @@ function procesarComando(msg) {
   if (texto === '!activar')     { setPausa(chatId, 0);  console.log(`▶️  Activa para ${chatId}`);   return true; }
   if (texto === '!pausatodo')   { setPausaGlobal(1);    console.log('⏸  Pausada para TODOS');       return true; }
   if (texto === '!activartodo') { setPausaGlobal(0);    console.log('▶️  Activa para TODOS');        return true; }
+  if (texto === '!precios') {
+    const p = cargarPrecios();
+    client.sendMessage(msg.from, formatearPrecios(p));
+    return true;
+  }
+  if (texto.startsWith('!set ')) {
+    const respuesta = procesarSet(texto);
+    client.sendMessage(msg.from, respuesta);
+    console.log('💰 Precio actualizado:', texto);
+    return true;
+  }
   if (texto === '!reiniciar') {
     console.log('🔄 Reiniciando Sofía...');
     setTimeout(() => process.exit(2), 1500);
@@ -80,7 +91,88 @@ function procesarComando(msg) {
   return false;
 }
 
-// ── Leer knowledge base ────────────────────────────────────
+// ── Precios dinámicos ─────────────────────────────────────
+const PRECIOS_PATH = path.join(__dirname, 'precios.json');
+
+function cargarPrecios() {
+  try { return JSON.parse(fs.readFileSync(PRECIOS_PATH, 'utf-8')); }
+  catch { return {}; }
+}
+
+function guardarPrecios(p) {
+  fs.writeFileSync(PRECIOS_PATH, JSON.stringify(p, null, 2));
+}
+
+function formatearPrecios(p) {
+  const f = n => '$' + Number(n).toLocaleString('es-AR');
+  return `💰 *PRECIOS ACTUALES — GAMA*
+
+*Tierra del Fuego*
+  Lun-Jue: ${f(p.tdf_semana)}
+  Vie-Dom: ${f(p.tdf_finde)}
+  Alta/Eventos: ${f(p.tdf_alta)}
+  Corporativo: ${f(p.tdf_corporativo)}
+
+*Deptos A y B*
+  Lun-Jue: ${f(p.ab_semana)}
+  Vie-Dom: ${f(p.ab_finde)}
+  Alta/Eventos: ${f(p.ab_alta)}
+  Corporativo: ${f(p.ab_corporativo)}
+
+*Adicionales*
+  Persona extra (3ra+): ${f(p.persona_extra)}/noche
+  Limpieza extra: ${f(p.limpieza_extra)}/servicio
+
+*Descuentos*
+  7+ noches: ${p.descuento_7_noches}% OFF
+  14+ noches: ${p.descuento_14_noches}% OFF
+
+Para cambiar: !set [clave] [valor]
+Ej: !set tdf_semana 60000`;
+}
+
+const CLAVES_VALIDAS = {
+  'tdf semana': 'tdf_semana',
+  'tdf finde': 'tdf_finde',
+  'tdf alta': 'tdf_alta',
+  'tdf corp': 'tdf_corporativo',
+  'a semana': 'ab_semana',
+  'ab semana': 'ab_semana',
+  'a finde': 'ab_finde',
+  'ab finde': 'ab_finde',
+  'a alta': 'ab_alta',
+  'ab alta': 'ab_alta',
+  'a corp': 'ab_corporativo',
+  'ab corp': 'ab_corporativo',
+  'extra': 'persona_extra',
+  'limpieza': 'limpieza_extra',
+  'descuento7': 'descuento_7_noches',
+  'descuento14': 'descuento_14_noches',
+};
+
+function procesarSet(texto) {
+  // formato: !set tdf semana 60000 o !set extra 12000
+  const partes = texto.replace('!set', '').trim().split(/\s+/);
+  if (partes.length < 2) return '❌ Formato: !set [clave] [valor]\nEjemplo: !set tdf semana 60000';
+
+  const valor = parseInt(partes[partes.length - 1]);
+  if (isNaN(valor)) return '❌ El valor debe ser un número. Ej: !set tdf finde 70000';
+
+  const claveTexto = partes.slice(0, -1).join(' ').toLowerCase();
+  const claveJson = CLAVES_VALIDAS[claveTexto];
+  if (!claveJson) {
+    return `❌ Clave no reconocida: "${claveTexto}"\n\nClaves válidas:\n${Object.keys(CLAVES_VALIDAS).join('\n')}`;
+  }
+
+  const precios = cargarPrecios();
+  const anterior = precios[claveJson];
+  precios[claveJson] = valor;
+  guardarPrecios(precios);
+
+  return `✅ *Precio actualizado*\n${claveTexto}: $${anterior?.toLocaleString('es-AR')} → $${valor.toLocaleString('es-AR')}`;
+}
+
+
 function cargarKnowledge() {
   try {
     return fs.readFileSync(path.join(__dirname, '..', 'knowledge', 'gama-info.md'), 'utf-8');
@@ -90,6 +182,19 @@ function cargarKnowledge() {
 // ── System prompt ──────────────────────────────────────────
 function buildSystemPrompt() {
   const knowledge = cargarKnowledge();
+  const p = cargarPrecios();
+  const f = n => '$' + Number(n).toLocaleString('es-AR');
+  const preciosTexto = `
+## TARIFAS VIGENTES (actualización automática)
+| Unidad           | Lun-Jue      | Vie-Dom      | Alta/Eventos  |
+|------------------|--------------|--------------|---------------|
+| Tierra del Fuego | ${f(p.tdf_semana)} | ${f(p.tdf_finde)} | ${f(p.tdf_alta)} |
+| Dpto A o B       | ${f(p.ab_semana)} | ${f(p.ab_finde)} | ${f(p.ab_alta)} |
+
+Corporativo: TDF ${f(p.tdf_corporativo)} | A/B ${f(p.ab_corporativo)} (máx 2 personas)
+Persona extra (3ra+): ${f(p.persona_extra)}/noche
+Limpieza extra (si la pide): ${f(p.limpieza_extra)}/servicio
+Descuentos: 7+ noches ${p.descuento_7_noches}% OFF | 14+ noches ${p.descuento_14_noches}% OFF`;
   return `Eres Sofía, agente comercial exclusiva de GAMA Departamentos, Gualeguay. Respondés por WhatsApp.
 
 ## ESTILO DE COMUNICACIÓN
@@ -123,7 +228,8 @@ Lunes a Domingo 6:00 AM a 10:00 PM.
 Fuera de horario: "Gracias por escribirnos 🏠 Nuestro horario es L-D 6am-10pm. Te respondemos a la brevedad."
 
 ## INFORMACIÓN DEL NEGOCIO
-${knowledge}`;
+${knowledge}
+${preciosTexto}`;
 }
 
 // ── Notificación al administrador ──────────────────────────

@@ -372,6 +372,10 @@ Descuentos: 7+ noches ${p.descuento_7_noches}% OFF | 14+ noches ${p.descuento_14
 ## ALQUILER FIJO
 Si consultan por alquiler fijo mensual: pediles nombre, apellido, cantidad de personas y fecha aproximada de ingreso. Decí: "Anotamos tu consulta y te brindamos la info disponible a la brevedad."
 
+## FOTOS E IMÁGENES
+Si el cliente pide fotos, imágenes o quiere ver cómo son las propiedades, respondé siempre con:
+"Podés ver fotos y toda la info en 🌐 www.alquilertemporalgama.com o en Instagram @alquileresguale 📸"
+
 ## HORARIO
 Lunes a Domingo 6:00 AM a 10:00 PM.
 Fuera de horario: "Gracias por escribirnos 🏠 Nuestro horario es L-D 6am-10pm. Te respondemos a la brevedad."

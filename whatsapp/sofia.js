@@ -5,6 +5,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const Database = require('better-sqlite3');
 const https = require('https');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
@@ -31,6 +32,7 @@ function fetchUrl(url) {
 
 function parsearEventos(ical) {
   const eventos = [];
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
   const texto = ical.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const bloques = texto.split('BEGIN:VEVENT');
   for (const bloque of bloques.slice(1)) {
@@ -38,7 +40,8 @@ function parsearEventos(ical) {
     const fin    = bloque.match(/DTEND[^:]*:(\d{8})/);
     if (inicio && fin) {
       const toDate = s => new Date(s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8));
-      eventos.push({ inicio: toDate(inicio[1]), fin: toDate(fin[1]) });
+      const fechaFin = toDate(fin[1]);
+      if (fechaFin >= hoy) eventos.push({ inicio: toDate(inicio[1]), fin: fechaFin });
     }
   }
   return eventos;
@@ -158,6 +161,31 @@ function extraerFechas(texto) {
 
 // ── Claude AI ──────────────────────────────────────────────
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// ── OpenAI Whisper (transcripción de audios) ───────────────
+let openai = null;
+if (process.env.OPENAI_API_KEY) {
+  const { OpenAI } = require('openai');
+  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  console.log('🎤 Transcripción de audios activada (Whisper)');
+} else {
+  console.log('ℹ️  Sin OPENAI_API_KEY — audios no serán transcriptos');
+}
+
+async function transcribirAudio(media) {
+  const tmpPath = path.join(os.tmpdir(), `audio_${Date.now()}.ogg`);
+  fs.writeFileSync(tmpPath, Buffer.from(media.data, 'base64'));
+  try {
+    const resultado = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(tmpPath),
+      model: 'whisper-1',
+      language: 'es',
+    });
+    return resultado.text;
+  } finally {
+    try { fs.unlinkSync(tmpPath); } catch {}
+  }
+}
 
 // ── Base de datos SQLite ───────────────────────────────────
 const db = new Database(path.join(__dirname, '..', 'sofia.db'));
@@ -374,7 +402,7 @@ Si consultan por alquiler fijo mensual: pediles nombre, apellido, cantidad de pe
 
 ## FOTOS E IMÁGENES
 Si el cliente pide fotos, imágenes o quiere ver cómo son las propiedades, respondé siempre con:
-"Podés ver fotos y toda la info en 🌐 www.alquilertemporalgama.com o en Instagram @alquileresguale 📸"
+"Podés ver fotos y toda la info en 🌐 www.alquilertemporalgama.com o en Instagram https://www.instagram.com/alquileresguale?igsh=NWFhNjRjaWozb2hp 📸"
 
 ## HORARIO
 Lunes a Domingo 6:00 AM a 10:00 PM.
@@ -508,7 +536,27 @@ client.on('message', async (msg) => {
   }
 
   const telefono = msg.from;
-  const texto = msg.body?.trim();
+  let texto = msg.body?.trim();
+
+  // Transcribir mensajes de audio
+  if (msg.hasMedia) {
+    try {
+      const media = await msg.downloadMedia();
+      if (media && (media.mimetype.startsWith('audio/') || media.mimetype.includes('ogg'))) {
+        if (!openai) {
+          await msg.reply('Por favor enviá tu consulta en texto ✍️');
+          return;
+        }
+        texto = await transcribirAudio(media);
+        console.log(`🎤 Audio transcripto de ${telefono}: ${texto}`);
+      }
+    } catch (err) {
+      console.error('Error descargando/transcribiendo media:', err.message);
+      await msg.reply('No pude procesar el audio. ¿Podés escribirme? 📝');
+      return;
+    }
+  }
+
   if (!texto) return;
 
   if (estaPausado(telefono)) {

@@ -33,13 +33,14 @@ function fetchUrl(url) {
 function parsearEventos(ical) {
   const eventos = [];
   const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  // Usar hora LOCAL (no UTC) para evitar desfase de zona horaria Argentina (UTC-3)
+  const toDate = s => new Date(parseInt(s.slice(0,4)), parseInt(s.slice(4,6))-1, parseInt(s.slice(6,8)));
   const texto = ical.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const bloques = texto.split('BEGIN:VEVENT');
   for (const bloque of bloques.slice(1)) {
     const inicio = bloque.match(/DTSTART[^:]*:(\d{8})/);
     const fin    = bloque.match(/DTEND[^:]*:(\d{8})/);
     if (inicio && fin) {
-      const toDate = s => new Date(s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8));
       const fechaFin = toDate(fin[1]);
       if (fechaFin >= hoy) eventos.push({ inicio: toDate(inicio[1]), fin: fechaFin });
     }

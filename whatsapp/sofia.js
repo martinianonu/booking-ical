@@ -265,6 +265,51 @@ function setPausaGlobal(valor) {
   db.prepare('UPDATE pausa_global SET pausado = ? WHERE id = 1').run(valor);
 }
 
+// Comandos recibidos desde el celular del dueño (msg entrante, no fromMe)
+async function procesarComandoEntrante(texto, msg) {
+  const t = texto.trim().toLowerCase();
+  const from = msg.from;
+
+  if (t === '!pausatodo')   { setPausaGlobal(1); await msg.reply('⏸ Sofía pausada para TODOS'); return true; }
+  if (t === '!activartodo') { setPausaGlobal(0); await msg.reply('▶️ Sofía activa para TODOS');  return true; }
+
+  if (t === '!precios') {
+    await msg.reply(formatearPrecios(cargarPrecios()));
+    return true;
+  }
+  if (t.startsWith('!set ')) {
+    await msg.reply(procesarSet(t));
+    return true;
+  }
+  if (t === '!reservas') {
+    cache.data = null; cache.ts = 0;
+    const cals = await consultarDisponibilidad();
+    const hoy = new Date();
+    const en60 = new Date(); en60.setDate(en60.getDate() + 60);
+    const fmt = d => d.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit' });
+    let r = `📅 *RESERVAS PRÓXIMOS 60 DÍAS*\n`;
+    for (const [nombre, eventos] of Object.entries(cals)) {
+      const proximas = eventos.filter(e => e.fin >= hoy && e.inicio <= en60);
+      r += `\n*${nombre}* (${proximas.length}):\n`;
+      for (const e of proximas) r += `  • ${fmt(e.inicio)} → ${fmt(e.fin)}\n`;
+      if (proximas.length === 0) r += `  sin reservas próximas\n`;
+    }
+    await msg.reply(r);
+    return true;
+  }
+  if (t === '!reiniciar') {
+    await msg.reply('🔄 Reiniciando...');
+    setTimeout(() => process.exit(2), 1500);
+    return true;
+  }
+  if (t === '!apagar') {
+    await msg.reply('🛑 Apagando Sofía...');
+    setTimeout(() => process.exit(0), 1500);
+    return true;
+  }
+  return false;
+}
+
 function procesarComando(msg) {
   const texto = msg.body?.trim().toLowerCase();
   const chatId = msg.to;
@@ -581,6 +626,12 @@ client.on('message', async (msg) => {
 
   const telefono = msg.from;
   let texto = msg.body?.trim();
+
+  // Comandos del dueño — funcionan desde cualquier número
+  if (texto && texto.startsWith('!')) {
+    const esComando = await procesarComandoEntrante(texto, msg);
+    if (esComando) return;
+  }
 
   // Transcribir mensajes de audio
   if (msg.hasMedia) {

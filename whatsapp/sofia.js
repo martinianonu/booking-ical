@@ -16,9 +16,9 @@ const CALENDARIOS = {
   'Depto B':          'https://ical.booking.com/v1/export?t=75a5d696-07bf-4a38-8f70-28020215ccfd',
 };
 
-// Cache para no llamar a Booking en cada mensaje (5 minutos)
+// Cache — 1 minuto para reflejar cambios rápido
 const cache = { data: null, ts: 0 };
-const CACHE_MS = 5 * 60 * 1000;
+const CACHE_MS = 1 * 60 * 1000;
 
 function fetchUrl(url) {
   return new Promise((resolve, reject) => {
@@ -52,6 +52,8 @@ function estaOcupado(eventos, entrada, salida) {
   return eventos.some(e => e.inicio < salida && e.fin > entrada);
 }
 
+const cacheRaw = {}; // iCal crudo por propiedad para diagnóstico
+
 async function consultarDisponibilidad() {
   const ahora = Date.now();
   if (cache.data && ahora - cache.ts < CACHE_MS) return cache.data;
@@ -61,8 +63,9 @@ async function consultarDisponibilidad() {
     Object.entries(CALENDARIOS).map(async ([nombre, url]) => {
       try {
         const ical = await fetchUrl(url);
+        cacheRaw[nombre] = ical;
         resultado[nombre] = parsearEventos(ical);
-        console.log(`📅 ${nombre}: ${resultado[nombre].length} reservas cargadas`);
+        console.log(`📅 ${nombre}: ${resultado[nombre].length} reservas futuras cargadas`);
       } catch (err) {
         console.error(`Error cargando calendario ${nombre}:`, err.message);
         resultado[nombre] = [];
@@ -73,6 +76,14 @@ async function consultarDisponibilidad() {
   cache.data = resultado;
   cache.ts = ahora;
   return resultado;
+}
+
+// Extrae el primer VEVENT crudo de un iCal (para diagnóstico)
+function primerEventoCrudo(ical) {
+  const texto = ical.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const bloques = texto.split('BEGIN:VEVENT');
+  if (bloques.length < 2) return 'Sin eventos';
+  return 'BEGIN:VEVENT' + bloques[1].split('END:VEVENT')[0] + 'END:VEVENT';
 }
 
 function proximaFechaLibre(eventos, desde, noches = 2) {
@@ -295,6 +306,16 @@ async function procesarComandoEntrante(texto, msg) {
       if (proximas.length === 0) r += `  sin reservas próximas\n`;
     }
     await msg.reply(r);
+    return true;
+  }
+  if (t.startsWith('!ical')) {
+    // !ical a | !ical b | !ical tdf → muestra primer evento crudo del calendario
+    await consultarDisponibilidad(); // asegura que cacheRaw esté cargado
+    const clave = t.replace('!ical', '').trim();
+    const mapa = { a: 'Depto A', b: 'Depto B', tdf: 'Tierra del Fuego', 'tierra del fuego': 'Tierra del Fuego' };
+    const nombre = mapa[clave] || 'Depto A';
+    const crudo = cacheRaw[nombre] ? primerEventoCrudo(cacheRaw[nombre]) : 'Sin datos';
+    await msg.reply(`🔍 *${nombre} — primer evento raw:*\n\`\`\`\n${crudo.slice(0, 800)}\n\`\`\``);
     return true;
   }
   if (t === '!reiniciar') {

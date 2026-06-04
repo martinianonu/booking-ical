@@ -113,10 +113,8 @@ function resumenEventos(ical, n = 5) {
 }
 
 function proximaFechaLibre(eventos, desde, noches = 2) {
-  // Busca el próximo hueco disponible de al menos 'noches' días, hasta 60 días adelante
   const MAX_DIAS = 60;
-  let candidato = new Date(desde);
-  candidato.setDate(candidato.getDate() + 1); // empieza al día siguiente
+  let candidato = new Date(desde); // el día de checkout ya está disponible para check-in
 
   for (let i = 0; i < MAX_DIAS; i++) {
     const fin = new Date(candidato);
@@ -557,10 +555,10 @@ Descuentos: 7+ noches ${p.descuento_7_noches}% OFF | 14+ noches ${p.descuento_14
 3. Destacá siempre: seguridad, cochera privada (A y B), propiedades en estado impecable
 4. Para reservar más de una noche: seña del 20% por transferencia al alias **gamaal.mp**
 5. El comprobante se envía al: **+54 9 3444 53-2516**
-6. Cuando digas "quedás confirmado" o equivalente, incluí al FINAL de tu respuesta este bloque (invisible para el cliente):
+6. SOLO cuando EL CLIENTE DE ESTA CONVERSACIÓN confirma su reserva (vos decís "quedás confirmado"), incluí este bloque al FINAL (nunca si estás informando que una fecha está ocupada para otro cliente):
    - 1 noche: [[RESERVA_CONFIRMADA: propiedad=X | fechas=DD/MM al DD/MM | huespedes=X | nombre=X | estado_pago=sin seña - pago al llegar]]
-   - Más de 1 noche con seña abonada: [[RESERVA_CONFIRMADA: propiedad=X | fechas=DD/MM al DD/MM | huespedes=X | nombre=X | estado_pago=seña abonada]]
-7. Si el cliente cancela o dice que ya no quiere reservar, incluí al FINAL: [[RESERVA_CANCELADA: propiedad=X | fechas=DD/MM al DD/MM | nombre=X]]
+   - Más de 1 noche con seña: [[RESERVA_CONFIRMADA: propiedad=X | fechas=DD/MM al DD/MM | huespedes=X | nombre=X | estado_pago=seña abonada]]
+7. Si EL CLIENTE DE ESTA CONVERSACIÓN cancela su reserva, incluí al FINAL: [[RESERVA_CANCELADA: propiedad=X | fechas=DD/MM al DD/MM | nombre=X]]
 
 ## DATOS REQUERIDOS PARA CERRAR RESERVA
 - Nombre y apellido

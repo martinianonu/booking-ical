@@ -302,7 +302,11 @@ async function procesarComandoEntrante(texto, msg) {
     for (const [nombre, eventos] of Object.entries(cals)) {
       const proximas = eventos.filter(e => e.fin >= hoy && e.inicio <= en60);
       r += `\n*${nombre}* (${proximas.length}):\n`;
-      for (const e of proximas) r += `  • ${fmt(e.inicio)} → ${fmt(e.fin)}\n`;
+      for (const e of proximas) {
+        // DTEND en iCal es exclusivo (día siguiente al último ocupado), restamos 1 para mostrar
+        const finDisplay = new Date(e.fin); finDisplay.setDate(finDisplay.getDate() - 1);
+        r += `  • ${fmt(e.inicio)} → ${fmt(finDisplay)}\n`;
+      }
       if (proximas.length === 0) r += `  sin reservas próximas\n`;
     }
     await msg.reply(r);
@@ -359,7 +363,10 @@ function procesarComando(msg) {
       for (const [nombre, eventos] of Object.entries(cals)) {
         const proximas = eventos.filter(e => e.fin >= hoy && e.inicio <= en60);
         respuesta += `\n*${nombre}*: ${proximas.length === 0 ? 'sin reservas' : ''}\n`;
-        for (const e of proximas) respuesta += `  • ${fmt(e.inicio)} → ${fmt(e.fin)}\n`;
+        for (const e of proximas) {
+          const finDisplay = new Date(e.fin); finDisplay.setDate(finDisplay.getDate() - 1);
+          respuesta += `  • ${fmt(e.inicio)} → ${fmt(finDisplay)}\n`;
+        }
       }
       client.sendMessage(msg.from, respuesta);
     }).catch(err => client.sendMessage(msg.from, '❌ Error al cargar calendarios: ' + err.message));
@@ -493,7 +500,7 @@ Descuentos: 7+ noches ${p.descuento_7_noches}% OFF | 14+ noches ${p.descuento_14
 
 ## REGLAS DE ORO
 1. Las unidades se alquilan SIEMPRE completas — nunca cotices "por persona"
-2. NUNCA confirmes disponibilidad sin que el sistema te la haya confirmado con ✅. Si no ves "✅ DISPONIBLE" en el contexto del sistema, decí que vas a verificar y pedí que espere.
+2. NUNCA confirmes disponibilidad sin datos del sistema. Si ves "✅ DISPONIBLE" → confirmá. Si ves "❌ OCUPADO" → avisá y ofrecé alternativa. Si NO hay ningún dato del sistema sobre disponibilidad → pedí las fechas exactas antes de responder sobre disponibilidad. JAMÁS asumas que está libre.
 3. Destacá siempre: seguridad, cochera privada (A y B), propiedades en estado impecable
 4. Para reservar más de una noche: seña del 20% por transferencia al alias **gamaal.mp**
 5. El comprobante se envía al: **+54 9 3444 53-2516**

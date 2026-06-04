@@ -9,20 +9,33 @@ const os = require('os');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-// ── Calendarios Booking.com ────────────────────────────────
+// ── Calendarios Booking.com + Airbnb ──────────────────────
 const CALENDARIOS = {
-  'Depto A':          'https://ical.booking.com/v1/export?t=18fa0402-6e0b-4ea5-af96-8fc518f0b968',
-  'Tierra del Fuego': 'https://ical.booking.com/v1/export?t=428cf286-d6d0-4a59-a8c4-4558afb6cf86',
-  'Depto B':          'https://ical.booking.com/v1/export?t=75a5d696-07bf-4a38-8f70-28020215ccfd',
+  'Depto A': [
+    'https://ical.booking.com/v1/export?t=18fa0402-6e0b-4ea5-af96-8fc518f0b968',
+    'https://www.airbnb.com/calendar/ical/1596334572814734710.ics?t=edc70c78d3644c85950d71577c9df4ae&locale=es-419',
+  ],
+  'Tierra del Fuego': [
+    'https://ical.booking.com/v1/export?t=428cf286-d6d0-4a59-a8c4-4558afb6cf86',
+    'https://www.airbnb.com/calendar/ical/1334885664072870742.ics?t=08bfaeeb176f4819acf3d1c362762ca1&locale=es-419',
+  ],
+  'Depto B': [
+    'https://ical.booking.com/v1/export?t=75a5d696-07bf-4a38-8f70-28020215ccfd',
+    'https://www.airbnb.com/calendar/ical/1298755662560739643.ics?t=c202f3c6dc2544eda77da40dedf469e2&locale=es-419',
+  ],
 };
 
 // Cache — 1 minuto para reflejar cambios rápido
 const cache = { data: null, ts: 0 };
 const CACHE_MS = 1 * 60 * 1000;
 
-function fetchUrl(url) {
+function fetchUrl(url, redireccionesRestantes = 5) {
   return new Promise((resolve, reject) => {
-    https.get(url, res => {
+    const mod = url.startsWith('https') ? require('https') : require('http');
+    mod.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, res => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redireccionesRestantes > 0) {
+        return fetchUrl(res.headers.location, redireccionesRestantes - 1).then(resolve).catch(reject);
+      }
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => resolve(data));
@@ -60,16 +73,24 @@ async function consultarDisponibilidad() {
 
   const resultado = {};
   await Promise.all(
-    Object.entries(CALENDARIOS).map(async ([nombre, url]) => {
-      try {
-        const ical = await fetchUrl(url);
-        cacheRaw[nombre] = ical;
-        resultado[nombre] = parsearEventos(ical);
-        console.log(`📅 ${nombre}: ${resultado[nombre].length} reservas futuras cargadas`);
-      } catch (err) {
-        console.error(`Error cargando calendario ${nombre}:`, err.message);
-        resultado[nombre] = [];
+    Object.entries(CALENDARIOS).map(async ([nombre, urls]) => {
+      const lista = Array.isArray(urls) ? urls : [urls];
+      let eventos = [];
+      const rawParts = [];
+      for (const url of lista) {
+        const fuente = url.includes('airbnb') ? 'Airbnb' : 'Booking';
+        try {
+          const ical = await fetchUrl(url);
+          rawParts.push(ical);
+          const ev = parsearEventos(ical);
+          eventos = eventos.concat(ev);
+          console.log(`📅 ${nombre} [${fuente}]: ${ev.length} reservas futuras`);
+        } catch (err) {
+          console.error(`Error ${nombre} [${fuente}]:`, err.message);
+        }
       }
+      cacheRaw[nombre] = rawParts.join('\n');
+      resultado[nombre] = eventos;
     })
   );
 

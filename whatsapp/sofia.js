@@ -129,31 +129,51 @@ function disponibilidadTexto(calendarios, entrada, salida, unidadSolicitada) {
   return lineas.join('\n');
 }
 
-// Extrae fechas mencionadas en el mensaje (formato DD/MM o "lunes 9", etc.)
+// Extrae fechas mencionadas en el mensaje
 function extraerFechas(texto) {
-  // Busca patrones como "10 al 15 de junio", "del 10/06 al 15/06", "viernes 20 al domingo 22"
   const meses = { enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,octubre:10,noviembre:11,diciembre:12 };
+  const hoy = new Date();
+  const año = hoy.getFullYear();
 
-  // Patrón: "del X al Y de mes" o "X al Y de mes"
+  // "del 5 al 7 de junio" / "10 al 15 de julio"
   const m1 = texto.match(/(\d{1,2})\s+al\s+(\d{1,2})\s+de\s+(\w+)/i);
   if (m1) {
     const mes = meses[m1[3].toLowerCase()];
-    if (mes) {
-      const año = new Date().getFullYear();
-      return {
-        entrada: new Date(año, mes-1, parseInt(m1[1])),
-        salida:  new Date(año, mes-1, parseInt(m1[2]))
-      };
-    }
+    if (mes) return {
+      entrada: new Date(año, mes-1, parseInt(m1[1])),
+      salida:  new Date(año, mes-1, parseInt(m1[2]))
+    };
   }
 
-  // Patrón: "DD/MM al DD/MM" o "DD/MM"
+  // "5/6 al 7/6" o "05/06 al 07/06"
   const m2 = texto.match(/(\d{1,2})\/(\d{1,2}).*?al.*?(\d{1,2})\/(\d{1,2})/);
-  if (m2) {
-    const año = new Date().getFullYear();
+  if (m2) return {
+    entrada: new Date(año, parseInt(m2[2])-1, parseInt(m2[1])),
+    salida:  new Date(año, parseInt(m2[4])-1, parseInt(m2[3]))
+  };
+
+  // "del 5 al 7" sin mes → asume mes actual o próximo
+  const m3 = texto.match(/\b(\d{1,2})\s+al\s+(\d{1,2})\b/);
+  if (m3) {
+    const d1 = parseInt(m3[1]), d2 = parseInt(m3[2]);
+    let mes = hoy.getMonth(); // mes actual (0-indexed)
+    // Si el día ya pasó, asumir mes siguiente
+    if (d1 < hoy.getDate()) mes = (mes + 1) % 12;
     return {
-      entrada: new Date(año, parseInt(m2[2])-1, parseInt(m2[1])),
-      salida:  new Date(año, parseInt(m2[4])-1, parseInt(m2[3]))
+      entrada: new Date(año, mes, d1),
+      salida:  new Date(año, mes, d2)
+    };
+  }
+
+  // "el viernes 5" o "lunes 9 al miércoles 11"
+  const m4 = texto.match(/(?:lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\s+(\d{1,2}).*?(?:lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\s+(\d{1,2})/i);
+  if (m4) {
+    const d1 = parseInt(m4[1]), d2 = parseInt(m4[2]);
+    let mes = hoy.getMonth();
+    if (d1 < hoy.getDate()) mes = (mes + 1) % 12;
+    return {
+      entrada: new Date(año, mes, d1),
+      salida:  new Date(año, mes, d2)
     };
   }
 
@@ -261,6 +281,22 @@ function procesarComando(msg) {
     const respuesta = procesarSet(texto);
     client.sendMessage(msg.from, respuesta);
     console.log('💰 Precio actualizado:', texto);
+    return true;
+  }
+  if (texto === '!reservas') {
+    cache.data = null; cache.ts = 0; // forzar recarga
+    consultarDisponibilidad().then(cals => {
+      const hoy = new Date();
+      const en60 = new Date(); en60.setDate(en60.getDate() + 60);
+      const fmt = d => d.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit' });
+      let respuesta = `📅 *RESERVAS PRÓXIMOS 60 DÍAS*\n`;
+      for (const [nombre, eventos] of Object.entries(cals)) {
+        const proximas = eventos.filter(e => e.fin >= hoy && e.inicio <= en60);
+        respuesta += `\n*${nombre}*: ${proximas.length === 0 ? 'sin reservas' : ''}\n`;
+        for (const e of proximas) respuesta += `  • ${fmt(e.inicio)} → ${fmt(e.fin)}\n`;
+      }
+      client.sendMessage(msg.from, respuesta);
+    }).catch(err => client.sendMessage(msg.from, '❌ Error al cargar calendarios: ' + err.message));
     return true;
   }
   if (texto === '!reiniciar') {
@@ -391,7 +427,7 @@ Descuentos: 7+ noches ${p.descuento_7_noches}% OFF | 14+ noches ${p.descuento_14
 
 ## REGLAS DE ORO
 1. Las unidades se alquilan SIEMPRE completas — nunca cotices "por persona"
-2. Verificá disponibilidad antes de confirmar (mencioná que lo verificás)
+2. NUNCA confirmes disponibilidad sin que el sistema te la haya confirmado con ✅. Si no ves "✅ DISPONIBLE" en el contexto del sistema, decí que vas a verificar y pedí que espere.
 3. Destacá siempre: seguridad, cochera privada (A y B), propiedades en estado impecable
 4. Para reservar más de una noche: seña del 20% por transferencia al alias **gamaal.mp**
 5. El comprobante se envía al: **+54 9 3444 53-2516**

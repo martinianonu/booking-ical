@@ -548,8 +548,10 @@ Descuentos: 7+ noches ${p.descuento_7_noches}% OFF | 14+ noches ${p.descuento_14
 3. Destacá siempre: seguridad, cochera privada (A y B), propiedades en estado impecable
 4. Para reservar más de una noche: seña del 20% por transferencia al alias **gamaal.mp**
 5. El comprobante se envía al: **+54 9 3444 53-2516**
-6. Cuando tengas TODOS los datos de reserva confirmados (nombre, fechas, unidad, huéspedes, seña abonada), incluí al FINAL de tu respuesta exactamente este bloque (no lo muestres al cliente, es solo para el sistema):
-   [[RESERVA_CONFIRMADA: propiedad=X | fechas=X | huespedes=X | nombre=X | estado_pago=seña abonada]]
+6. Cuando digas "quedás confirmado" o equivalente, incluí al FINAL de tu respuesta este bloque (invisible para el cliente, solo para el sistema):
+   - Si es 1 noche (sin seña): [[RESERVA_CONFIRMADA: propiedad=X | fechas=X | huespedes=X | nombre=X | estado_pago=sin seña - pago al llegar]]
+   - Si es más de 1 noche y la seña fue abonada: [[RESERVA_CONFIRMADA: propiedad=X | fechas=X | huespedes=X | nombre=X | estado_pago=seña abonada]]
+7. Si el cliente cancela o dice que ya no quiere reservar, incluí al FINAL: [[RESERVA_CANCELADA: propiedad=X | fechas=X | nombre=X]]
 
 ## DATOS REQUERIDOS PARA CERRAR RESERVA
 - Nombre y apellido
@@ -586,25 +588,32 @@ ${preciosTexto}`;
 // ── Notificación al administrador ──────────────────────────
 const ADMIN_NUMBER = '5493444532537@c.us'; // +54 9 3444 53-2537
 
-async function notificarAdmin(datosReserva, telefonoCliente) {
+function extraerNotificacion(respuesta) {
+  const confirmada = respuesta.match(/\[\[RESERVA_CONFIRMADA:(.*?)\]\]/s);
+  if (confirmada) return {
+    tipo: 'confirmada',
+    datos: confirmada[1].trim(),
+    textoLimpio: respuesta.replace(/\[\[RESERVA_CONFIRMADA:.*?\]\]/s, '').trim()
+  };
+  const cancelada = respuesta.match(/\[\[RESERVA_CANCELADA:(.*?)\]\]/s);
+  if (cancelada) return {
+    tipo: 'cancelada',
+    datos: cancelada[1].trim(),
+    textoLimpio: respuesta.replace(/\[\[RESERVA_CANCELADA:.*?\]\]/s, '').trim()
+  };
+  return null;
+}
+
+async function notificarAdmin(notif, telefonoCliente) {
   try {
-    const msg = `🏠 *NUEVA RESERVA CONFIRMADA — GAMA*\n\n${datosReserva}\n\n📱 Cliente: ${telefonoCliente}`;
+    const icono = notif.tipo === 'cancelada' ? '❌' : '🏠';
+    const titulo = notif.tipo === 'cancelada' ? 'RESERVA CANCELADA' : 'NUEVA RESERVA CONFIRMADA';
+    const msg = `${icono} *${titulo} — GAMA*\n\n${notif.datos}\n\n📱 Cliente: ${telefonoCliente}`;
     await client.sendMessage(ADMIN_NUMBER, msg);
-    console.log('📨 Notificación enviada al admin');
+    console.log(`📨 Notificación [${notif.tipo}] enviada al admin`);
   } catch (err) {
     console.error('Error notificando admin:', err.message);
   }
-}
-
-function extraerNotificacion(respuesta) {
-  const match = respuesta.match(/\[\[RESERVA_CONFIRMADA:(.*?)\]\]/s);
-  if (match) {
-    return {
-      datos: match[1].trim(),
-      textoLimpio: respuesta.replace(/\[\[RESERVA_CONFIRMADA:.*?\]\]/s, '').trim()
-    };
-  }
-  return null;
 }
 
 // ── Generar respuesta con Claude ───────────────────────────
@@ -756,7 +765,7 @@ client.on('message', async (msg) => {
     console.log(`💬 Sofía: ${respuesta.substring(0, 80)}...`);
 
     if (notif) {
-      await notificarAdmin(notif.datos, telefono);
+      await notificarAdmin(notif, telefono);
     }
   } catch (err) {
     console.error('Error procesando mensaje:', err.message);

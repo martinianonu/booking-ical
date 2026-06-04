@@ -214,6 +214,24 @@ function extraerFechas(texto) {
     };
   }
 
+  // Fecha única "el 4/6", "para el 04/06", "el 4 de junio" → 1 noche
+  const m5 = texto.match(/\b(\d{1,2})\/(\d{1,2})\b/);
+  if (m5) {
+    const entrada = new Date(año, parseInt(m5[2])-1, parseInt(m5[1]));
+    const salida  = new Date(año, parseInt(m5[2])-1, parseInt(m5[1]) + 1);
+    return { entrada, salida };
+  }
+
+  const m6 = texto.match(/\b(\d{1,2})\s+de\s+(\w+)/i);
+  if (m6) {
+    const mes = meses[m6[2].toLowerCase()];
+    if (mes) {
+      const entrada = new Date(año, mes-1, parseInt(m6[1]));
+      const salida  = new Date(año, mes-1, parseInt(m6[1]) + 1);
+      return { entrada, salida };
+    }
+  }
+
   return null;
 }
 
@@ -526,7 +544,7 @@ Descuentos: 7+ noches ${p.descuento_7_noches}% OFF | 14+ noches ${p.descuento_14
 
 ## REGLAS DE ORO
 1. Las unidades se alquilan SIEMPRE completas — nunca cotices "por persona"
-2. NUNCA confirmes disponibilidad sin datos del sistema. Si ves "✅ DISPONIBLE" → confirmá. Si ves "❌ OCUPADO" → avisá y ofrecé alternativa. Si NO hay ningún dato del sistema sobre disponibilidad → pedí las fechas exactas antes de responder sobre disponibilidad. JAMÁS asumas que está libre.
+2. NUNCA confirmes disponibilidad sin datos del sistema. Si ves "✅ DISPONIBLE" → confirmá. Si ves "❌ OCUPADO" → avisá y ofrecé alternativa. Si NO hay datos del sistema → preguntá "¿Para qué fechas exactas querés reservar?" JAMÁS digas que no tenés acceso al sistema ni mandes a llamar por teléfono.
 3. Destacá siempre: seguridad, cochera privada (A y B), propiedades en estado impecable
 4. Para reservar más de una noche: seña del 20% por transferencia al alias **gamaal.mp**
 5. El comprobante se envía al: **+54 9 3444 53-2516**

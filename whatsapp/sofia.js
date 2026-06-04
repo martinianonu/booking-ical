@@ -583,13 +583,14 @@ Si consultan por alquiler fijo mensual, primero contales las opciones disponible
 
 Luego recolectá estos datos DE A UNO por mensaje:
 1. Nombre y apellido
-2. Cantidad de personas
-3. Qué tipo de depto les interesa (2 habitaciones o 1 habitación)
-4. Fecha aproximada de ingreso
-5. Qué días y horarios podrían visitar el departamento
+2. Teléfono de contacto
+3. Cantidad de personas
+4. Qué tipo de depto les interesa (2 habitaciones o 1 habitación)
+5. Fecha aproximada de ingreso
+6. Qué días y horarios podrían visitar el departamento
 
 Cuando tengas TODOS esos datos, decí: "¡Perfecto! Anotamos tu consulta, coordinamos la visita y te confirmamos disponibilidad a la brevedad 😊" e incluí al FINAL:
-[[ALQUILER_FIJO: nombre=X | personas=X | tipo=X | ingreso=X | visita=X | telefono=TELEFONO_CLIENTE]]
+[[ALQUILER_FIJO: nombre=X | telefono=X | personas=X | tipo=X | ingreso=X | visita=X]]
 
 ## FOTOS E IMÁGENES
 Si el cliente pide fotos, imágenes o quiere ver cómo son las propiedades, respondé siempre con:
@@ -685,10 +686,22 @@ async function notificarAdmin(notif, telefonoCliente) {
     if (notif.tipo === 'cancelada') { icono = '❌'; titulo = 'RESERVA CANCELADA'; }
     else if (notif.tipo === 'fijo') { icono = '🏢'; titulo = 'INTERESADO EN DEPTO FIJO'; }
     else                            { icono = '🏠'; titulo = 'NUEVA RESERVA CONFIRMADA'; }
-    const datos = notif.tipo === 'fijo'
-      ? notif.datos.replace('TELEFONO_CLIENTE', telefonoCliente)
-      : notif.datos;
-    const msg = `${icono} *${titulo} — GAMA*\n\n${datos}\n\n📱 Contacto: ${telefonoCliente}`;
+    let msg;
+    if (notif.tipo === 'fijo') {
+      const d = Object.fromEntries(
+        notif.datos.split('|').map(p => p.trim().split('=').map(s => s.trim()))
+      );
+      msg = `🏢 *INTERESADO EN DEPTO FIJO — GAMA*\n\n` +
+        `👤 Nombre: ${d.nombre || '-'}\n` +
+        `📱 Teléfono: ${d.telefono || telefonoCliente}\n` +
+        `👥 Personas: ${d.personas || '-'}\n` +
+        `🏠 Tipo: ${d.tipo || '-'}\n` +
+        `📅 Ingreso aprox: ${d.ingreso || '-'}\n` +
+        `🕐 Visita: ${d.visita || '-'}\n` +
+        `\n💬 WhatsApp: ${telefonoCliente}`;
+    } else {
+      msg = `${icono} *${titulo} — GAMA*\n\n${notif.datos}\n\n📱 Cliente: ${telefonoCliente}`;
+    }
     await client.sendMessage(ADMIN_NUMBER, msg);
     console.log(`📨 Notificación [${notif.tipo}] enviada al admin`);
   } catch (err) {

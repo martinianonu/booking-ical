@@ -78,12 +78,17 @@ async function consultarDisponibilidad() {
   return resultado;
 }
 
-// Extrae el primer VEVENT crudo de un iCal (para diagnóstico)
-function primerEventoCrudo(ical) {
-  const texto = ical.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  const bloques = texto.split('BEGIN:VEVENT');
-  if (bloques.length < 2) return 'Sin eventos';
-  return 'BEGIN:VEVENT' + bloques[1].split('END:VEVENT')[0] + 'END:VEVENT';
+// Extrae los primeros N eventos del iCal con DTSTART, DTEND y SUMMARY
+function resumenEventos(ical, n = 5) {
+  const texto = ical.replace(/\r\n /g, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const bloques = texto.split('BEGIN:VEVENT').slice(1, n + 1);
+  if (!bloques.length) return 'Sin eventos';
+  return bloques.map((b, i) => {
+    const start   = (b.match(/DTSTART[^:]*:([\dT Z]+)/) || [])[1] || '?';
+    const end     = (b.match(/DTEND[^:]*:([\dT Z]+)/)   || [])[1] || '?';
+    const summary = (b.match(/SUMMARY:(.+)/)              || [])[1] || '?';
+    return `${i+1}. START:${start.trim()} END:${end.trim()}\n   ${summary.trim()}`;
+  }).join('\n');
 }
 
 function proximaFechaLibre(eventos, desde, noches = 2) {
@@ -318,8 +323,8 @@ async function procesarComandoEntrante(texto, msg) {
     const clave = t.replace('!ical', '').trim();
     const mapa = { a: 'Depto A', b: 'Depto B', tdf: 'Tierra del Fuego', 'tierra del fuego': 'Tierra del Fuego' };
     const nombre = mapa[clave] || 'Depto A';
-    const crudo = cacheRaw[nombre] ? primerEventoCrudo(cacheRaw[nombre]) : 'Sin datos';
-    await msg.reply(`🔍 *${nombre} — primer evento raw:*\n\`\`\`\n${crudo.slice(0, 800)}\n\`\`\``);
+    const resumen = cacheRaw[nombre] ? resumenEventos(cacheRaw[nombre], 6) : 'Sin datos';
+    await msg.reply(`🔍 *${nombre} — próximos eventos:*\n${resumen}`);
     return true;
   }
   if (t === '!reiniciar') {

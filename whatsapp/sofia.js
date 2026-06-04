@@ -290,6 +290,15 @@ db.exec(`
     pausado INTEGER DEFAULT 0
   );
   INSERT OR IGNORE INTO pausa_global (id, pausado) VALUES (1, 0);
+  CREATE TABLE IF NOT EXISTS reservas_internas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    propiedad TEXT NOT NULL,
+    entrada TEXT NOT NULL,
+    salida TEXT NOT NULL,
+    nombre TEXT,
+    telefono TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 function guardarMensaje(telefono, role, content) {
@@ -548,10 +557,10 @@ Descuentos: 7+ noches ${p.descuento_7_noches}% OFF | 14+ noches ${p.descuento_14
 3. Destacá siempre: seguridad, cochera privada (A y B), propiedades en estado impecable
 4. Para reservar más de una noche: seña del 20% por transferencia al alias **gamaal.mp**
 5. El comprobante se envía al: **+54 9 3444 53-2516**
-6. Cuando digas "quedás confirmado" o equivalente, incluí al FINAL de tu respuesta este bloque (invisible para el cliente, solo para el sistema):
-   - Si es 1 noche (sin seña): [[RESERVA_CONFIRMADA: propiedad=X | fechas=X | huespedes=X | nombre=X | estado_pago=sin seña - pago al llegar]]
-   - Si es más de 1 noche y la seña fue abonada: [[RESERVA_CONFIRMADA: propiedad=X | fechas=X | huespedes=X | nombre=X | estado_pago=seña abonada]]
-7. Si el cliente cancela o dice que ya no quiere reservar, incluí al FINAL: [[RESERVA_CANCELADA: propiedad=X | fechas=X | nombre=X]]
+6. Cuando digas "quedás confirmado" o equivalente, incluí al FINAL de tu respuesta este bloque (invisible para el cliente):
+   - 1 noche: [[RESERVA_CONFIRMADA: propiedad=X | fechas=DD/MM al DD/MM | huespedes=X | nombre=X | estado_pago=sin seña - pago al llegar]]
+   - Más de 1 noche con seña abonada: [[RESERVA_CONFIRMADA: propiedad=X | fechas=DD/MM al DD/MM | huespedes=X | nombre=X | estado_pago=seña abonada]]
+7. Si el cliente cancela o dice que ya no quiere reservar, incluí al FINAL: [[RESERVA_CANCELADA: propiedad=X | fechas=DD/MM al DD/MM | nombre=X]]
 
 ## DATOS REQUERIDOS PARA CERRAR RESERVA
 - Nombre y apellido
@@ -587,6 +596,56 @@ ${preciosTexto}`;
 
 // ── Notificación al administrador ──────────────────────────
 const ADMIN_NUMBER = '5493444532537@c.us'; // +54 9 3444 53-2537
+
+// ── Reservas internas (bloqueadas por WhatsApp) ────────────
+function guardarReservaInterna(datos, telefono) {
+  try {
+    // Parsear entrada/salida desde el marcador (formato DD/MM o YYYY-MM-DD)
+    const fechasMatch = datos.match(/fechas?=([^|]+)/i) || datos.match(/entrada=([^|]+).*?salida=([^|]+)/i);
+    if (!fechasMatch) return;
+    let entrada, salida;
+    const rango = (datos.match(/fechas?=([^|]+)/i) || ['',''])[1].trim();
+    const m = rango.match(/(\d{1,2})[\/\-](\d{1,2}).*?al.*?(\d{1,2})[\/\-](\d{1,2})/);
+    if (m) {
+      const año = new Date().getFullYear();
+      entrada = `${año}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+      salida  = `${año}-${m[4].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+    } else return;
+    const propMatch = datos.match(/propiedad=([^|]+)/i);
+    const nombreMatch = datos.match(/nombre=([^|]+)/i);
+    const propiedad = propMatch ? propMatch[1].trim() : 'desconocida';
+    const nombre = nombreMatch ? nombreMatch[1].trim() : '';
+    db.prepare('INSERT INTO reservas_internas (propiedad, entrada, salida, nombre, telefono) VALUES (?,?,?,?,?)')
+      .run(propiedad, entrada, salida, nombre, telefono);
+    console.log(`📌 Reserva interna guardada: ${propiedad} ${entrada} → ${salida}`);
+    cache.data = null; // invalidar cache para próxima consulta
+  } catch (err) { console.error('Error guardando reserva interna:', err.message); }
+}
+
+function cancelarReservaInterna(datos, telefono) {
+  try {
+    db.prepare('DELETE FROM reservas_internas WHERE telefono = ?').run(telefono);
+    console.log(`🗑 Reserva interna cancelada para ${telefono}`);
+    cache.data = null;
+  } catch (err) { console.error('Error cancelando reserva interna:', err.message); }
+}
+
+function eventosReservasInternas() {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const rows = db.prepare('SELECT * FROM reservas_internas').all();
+  const result = {};
+  for (const r of rows) {
+    const entrada = new Date(r.entrada + 'T00:00:00');
+    const salida  = new Date(r.salida  + 'T00:00:00');
+    if (salida < hoy) continue; // ya pasó
+    const prop = r.propiedad.includes('B') ? 'Depto B'
+               : r.propiedad.includes('Fuego') || r.propiedad.includes('TDF') ? 'Tierra del Fuego'
+               : 'Depto A';
+    if (!result[prop]) result[prop] = [];
+    result[prop].push({ inicio: entrada, fin: salida });
+  }
+  return result;
+}
 
 function extraerNotificacion(respuesta) {
   const confirmada = respuesta.match(/\[\[RESERVA_CONFIRMADA:(.*?)\]\]/s);
@@ -626,7 +685,12 @@ async function generarRespuesta(telefono, mensaje) {
   if (fechas) {
     console.log(`🔍 Verificando disponibilidad: ${fechas.entrada.toLocaleDateString()} → ${fechas.salida.toLocaleDateString()}`);
     const calendarios = await consultarDisponibilidad();
-    // Detectar si el cliente pidió una unidad específica (también revisando historial)
+    // Combinar con reservas confirmadas por WhatsApp
+    const internas = eventosReservasInternas();
+    for (const [prop, evs] of Object.entries(internas)) {
+      if (!calendarios[prop]) calendarios[prop] = [];
+      calendarios[prop] = calendarios[prop].concat(evs);
+    }
     const textoCompleto = [...historial.map(m => m.content), mensaje].join(' ');
     const unidadSolicitada = detectarUnidad(textoCompleto);
     contextoDisponibilidad = disponibilidadTexto(calendarios, fechas.entrada, fechas.salida, unidadSolicitada);
@@ -765,6 +829,8 @@ client.on('message', async (msg) => {
     console.log(`💬 Sofía: ${respuesta.substring(0, 80)}...`);
 
     if (notif) {
+      if (notif.tipo === 'confirmada') guardarReservaInterna(notif.datos, telefono);
+      if (notif.tipo === 'cancelada')  cancelarReservaInterna(notif.datos, telefono);
       await notificarAdmin(notif, telefono);
     }
   } catch (err) {

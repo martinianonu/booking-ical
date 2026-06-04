@@ -3,7 +3,7 @@
 
 ## PROPIEDADES
 
-### Deptos A y B (Yrigoyen 487)
+### Deptos A y B — Yrigoyen 487, Gualeguay, Entre Ríos
 - 2 habitaciones en planta alta (1 cama matrimonial + 2 individuales)
 - Capacidad: hasta 5 personas
 - Baño completo en planta alta
@@ -12,13 +12,16 @@
 - Cochera privada 3x2
 - Todos los servicios incluidos + ropa de cama
 
-### Tierra del Fuego
+### Tierra del Fuego — Tierra del Fuego 109, Gualeguay, Entre Ríos
 - 1 habitación en planta alta con baño
 - Living-comedor + cocina en planta baja
 - 3 camas individuales en planta alta + 2 individuales en planta baja
 - Todos los servicios incluidos + ropa de cama
 
 Para fotos y más info: https://alquilertemporalgama.com
+
+### Entrega de llaves
+El día anterior a la llegada del huésped, la recepcionista de llaves se comunicará por WhatsApp para coordinar el horario de entrega y recepción.
 
 ---
 

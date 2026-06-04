@@ -65,11 +65,19 @@ El día anterior a la llegada del huésped, la recepcionista de llaves se comuni
 ---
 
 ## ALQUILER FIJO MENSUAL
-Si el cliente consulta por alquiler fijo (no temporal), pedirle:
-- Nombre y apellido
-- Cantidad de personas
-- Fecha aproximada de ingreso
-Responder: "Anotamos tu consulta y te brindamos la info disponible a la brevedad."
+
+### Opción 1 — 2 habitaciones (con cochera)
+- Cochera privada, cocina, patio
+- Gas natural
+- Listo para ingresar
+
+### Opción 2 — 1 habitación (dúplex)
+- Living-comedor, dúplex de 2 plantas
+- Baño en planta alta
+- Termotanque y calefactor en planta baja
+- Semi-equipado, listo para ingresar
+
+Para ambas opciones: dejanos tus datos y te confirmamos disponibilidad a la brevedad.
 
 ---
 

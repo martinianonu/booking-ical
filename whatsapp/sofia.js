@@ -577,7 +577,13 @@ Si el cliente acepta cualquier unidad disponible, elegí siempre **Depto A** pri
 - Más de 1 noche: seña del 20% por transferencia al alias **gamaal.mp**.
 
 ## ALQUILER FIJO
-Si consultan por alquiler fijo mensual: pediles nombre, apellido, cantidad de personas y fecha aproximada de ingreso. Decí: "Anotamos tu consulta y te brindamos la info disponible a la brevedad."
+Si consultan por alquiler fijo mensual, primero contales las opciones disponibles:
+- **2 habitaciones**: cochera, cocina, patio, gas natural, listo para ingresar
+- **1 habitación (dúplex)**: 2 plantas, baño arriba, termotanque y calefactor abajo, semi-equipado, listo para ingresar
+
+Luego pediles: nombre y apellido, cantidad de personas, qué tipo de departamento les interesa, y fecha aproximada de ingreso.
+Cuando tengas todos esos datos, decí: "¡Perfecto! Anotamos tu consulta y te confirmamos disponibilidad a la brevedad 😊" e incluí al FINAL (solo cuando tengas TODOS los datos):
+[[ALQUILER_FIJO: nombre=X | personas=X | tipo=X | ingreso=X | telefono=TELEFONO_CLIENTE]]
 
 ## FOTOS E IMÁGENES
 Si el cliente pide fotos, imágenes o quiere ver cómo son las propiedades, respondé siempre con:
@@ -658,14 +664,25 @@ function extraerNotificacion(respuesta) {
     datos: cancelada[1].trim(),
     textoLimpio: respuesta.replace(/\[\[RESERVA_CANCELADA:.*?\]\]/s, '').trim()
   };
+  const fijo = respuesta.match(/\[\[ALQUILER_FIJO:(.*?)\]\]/s);
+  if (fijo) return {
+    tipo: 'fijo',
+    datos: fijo[1].trim().replace('TELEFONO_CLIENTE', ''),
+    textoLimpio: respuesta.replace(/\[\[ALQUILER_FIJO:.*?\]\]/s, '').trim()
+  };
   return null;
 }
 
 async function notificarAdmin(notif, telefonoCliente) {
   try {
-    const icono = notif.tipo === 'cancelada' ? '❌' : '🏠';
-    const titulo = notif.tipo === 'cancelada' ? 'RESERVA CANCELADA' : 'NUEVA RESERVA CONFIRMADA';
-    const msg = `${icono} *${titulo} — GAMA*\n\n${notif.datos}\n\n📱 Cliente: ${telefonoCliente}`;
+    let icono, titulo;
+    if (notif.tipo === 'cancelada') { icono = '❌'; titulo = 'RESERVA CANCELADA'; }
+    else if (notif.tipo === 'fijo') { icono = '🏢'; titulo = 'INTERESADO EN DEPTO FIJO'; }
+    else                            { icono = '🏠'; titulo = 'NUEVA RESERVA CONFIRMADA'; }
+    const datos = notif.tipo === 'fijo'
+      ? notif.datos.replace('TELEFONO_CLIENTE', telefonoCliente)
+      : notif.datos;
+    const msg = `${icono} *${titulo} — GAMA*\n\n${datos}\n\n📱 Contacto: ${telefonoCliente}`;
     await client.sendMessage(ADMIN_NUMBER, msg);
     console.log(`📨 Notificación [${notif.tipo}] enviada al admin`);
   } catch (err) {

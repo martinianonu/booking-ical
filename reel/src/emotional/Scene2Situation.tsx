@@ -1,7 +1,7 @@
 import { AbsoluteFill, Img, staticFile, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 import { fontFamily } from "../fonts";
 import { colors } from "../brand";
-import { enterUp } from "../animation";
+import { enterUp, pulse } from "../animation";
 
 export const SCENE_DURATION = 70;
 
@@ -41,6 +41,19 @@ export const Scene2Situation: React.FC = () => {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
+  const { scale: sirenScale, opacity: sirenOpacity } = (() => {
+    const s = interpolate(frame, [22, 34], [0.4, 1], {
+      easing: (t) => t * (2 - t),
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    });
+    const o = interpolate(frame, [22, 30], [0, 1], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    });
+    return { scale: s, opacity: o };
+  })();
+  const sirenFlash = pulse(frame, 9, 0.4, 1);
 
   return (
     <AbsoluteFill style={{ backgroundColor: colors.navyDeepest }}>
@@ -78,6 +91,44 @@ export const Scene2Situation: React.FC = () => {
               boxShadow: `0 0 40px ${colors.red}`,
             }}
           />
+
+          {/* real siren, mounted next to the VIGIA plaque */}
+          <div
+            style={{
+              position: "absolute",
+              left: 118,
+              top: -46,
+              width: 92,
+              height: 92,
+              scale: sirenScale,
+              opacity: sirenOpacity,
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                inset: -20,
+                borderRadius: 26,
+                border: `3px solid ${colors.red}`,
+                opacity: 0.4 + sirenFlash * 0.5,
+                boxShadow: `0 0 ${18 + sirenFlash * 22}px ${colors.red}`,
+              }}
+            />
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: 18,
+                overflow: "hidden",
+                border: `2px solid ${colors.red}cc`,
+              }}
+            >
+              <Img
+                src={staticFile("siren-photo.png")}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            </div>
+          </div>
         </div>
       </AbsoluteFill>
 

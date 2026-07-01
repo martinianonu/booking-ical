@@ -1,6 +1,6 @@
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
-import { AbsoluteFill } from "remotion";
+import { AbsoluteFill, Audio, staticFile } from "remotion";
 
 import { Scene1Title, SCENE_DURATION as D1 } from "./emotional/Scene1Title";
 import { Scene2Situation, SCENE_DURATION as D2 } from "./emotional/Scene2Situation";
@@ -17,6 +17,10 @@ export const EMOTIONAL_TOTAL_DURATION = D1 + D2 + D3 + D4 + D5 + D6 + D7 - TRANS
 export const CentralVigiaEmotional: React.FC = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: "#000000" }}>
+      {/* Client's original narration/sound from their reference clip. It runs
+          ~9.6s; our cut is longer (added the verification beat), so it plays
+          under the first scenes and the video continues silently after. */}
+      <Audio src={staticFile("audio/reference-voice.mp3")} />
       <TransitionSeries>
         <TransitionSeries.Sequence durationInFrames={D1}>
           <Scene1Title />

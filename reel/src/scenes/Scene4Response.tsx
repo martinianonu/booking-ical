@@ -6,7 +6,7 @@ import { CarPhoto } from "../components/CarPhoto";
 import { PanicNotification } from "../components/PhoneMockup";
 import { colors } from "../brand";
 
-export const SCENE_4_DURATION = 140;
+export const SCENE_4_DURATION = 115;
 
 export const Scene4Response: React.FC = () => {
   return (
@@ -15,15 +15,15 @@ export const Scene4Response: React.FC = () => {
 
       <Stage gap={36} padTop={190}>
         <Kicker delay={4}>Respuesta inmediata</Kicker>
-        <Heading delay={14} size={72}>
+        <Heading delay={12} size={72}>
           Verificamos la alerta y enviamos un
           <br />
           <span style={{ color: colors.blueGlow }}>móvil exclusivo a tu casa</span>
         </Heading>
 
-        <CarPhoto delay={30} width={700} />
+        <CarPhoto delay={25} width={700} />
 
-        <PanicNotification delay={72} />
+        <PanicNotification delay={59} />
       </Stage>
     </Background>
   );

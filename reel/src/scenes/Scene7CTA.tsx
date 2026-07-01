@@ -7,7 +7,7 @@ import { colors } from "../brand";
 import { fontFamily } from "../fonts";
 import { enterUp, popIn } from "../animation";
 
-export const SCENE_7_DURATION = 150;
+export const SCENE_7_DURATION = 125;
 
 const Pill: React.FC<{ text: string; delay: number }> = ({ text, delay }) => {
   const frame = useCurrentFrame();
@@ -35,7 +35,7 @@ const Pill: React.FC<{ text: string; delay: number }> = ({ text, delay }) => {
 export const Scene7CTA: React.FC = () => {
   const frame = useCurrentFrame();
   const logo = popIn(frame, 2, 24);
-  const cta = enterUp(frame, 56, 22, 28);
+  const cta = enterUp(frame, 47, 22, 28);
 
   return (
     <Background variant="vertical">
@@ -46,7 +46,7 @@ export const Scene7CTA: React.FC = () => {
           <Logo width={440} />
         </div>
 
-        <Pill text="Monitoreo 24/7" delay={30} />
+        <Pill text="Monitoreo 24/7" delay={25} />
 
         <div
           style={{

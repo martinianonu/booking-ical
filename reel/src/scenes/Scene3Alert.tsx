@@ -8,22 +8,22 @@ import { HouseIcon } from "../components/Icons";
 import { colors } from "../brand";
 import { enterUp } from "../animation";
 
-export const SCENE_3_DURATION = 140;
+export const SCENE_3_DURATION = 115;
 
 export const Scene3Alert: React.FC = () => {
   const frame = useCurrentFrame();
   const { width } = useVideoConfig();
 
-  const travel = interpolate(frame, [6, 46], [0, 1], {
+  const travel = interpolate(frame, [5, 36], [0, 1], {
     easing: Easing.inOut(Easing.cubic),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const dotOpacity = interpolate(frame, [6, 16, 40, 50], [0, 1, 1, 0], {
+  const dotOpacity = interpolate(frame, [5, 13, 32, 40], [0, 1, 1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const { opacity: operatorOpacity, translateY: operatorY } = enterUp(frame, 30, 26, 40);
+  const { opacity: operatorOpacity, translateY: operatorY } = enterUp(frame, 24, 22, 40);
 
   return (
     <Background variant="night">
@@ -112,7 +112,7 @@ export const Scene3Alert: React.FC = () => {
           <OperatorSilhouette width={520} />
         </div>
 
-        <Subtext delay={64} size={38}>
+        <Subtext delay={52} size={38}>
           Un operador humano confirma la emergencia al instante.
         </Subtext>
       </Stage>

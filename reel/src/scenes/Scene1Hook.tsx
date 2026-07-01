@@ -5,7 +5,7 @@ import { IntrusionOverlay } from "../components/IntrusionOverlay";
 import { colors } from "../brand";
 import { enterUp } from "../animation";
 
-export const SCENE_1_DURATION = 140;
+export const SCENE_1_DURATION = 108;
 
 export const Scene1Hook: React.FC = () => {
   const frame = useCurrentFrame();
@@ -19,7 +19,7 @@ export const Scene1Hook: React.FC = () => {
 
   // The shot opens in broad daylight (the real photo, untouched) and grades
   // down into dusk/night as the tension builds — day-for-night color grade.
-  const grade = interpolate(frame, [16, 60], [0, 1], {
+  const grade = interpolate(frame, [10, 40], [0, 1], {
     easing: Easing.inOut(Easing.cubic),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -27,18 +27,18 @@ export const Scene1Hook: React.FC = () => {
   const brightness = 1 - grade * 0.62;
   const saturate = 1 - grade * 0.75;
 
-  const vignette = interpolate(frame, [16, 60], [0, 0.78], {
+  const vignette = interpolate(frame, [10, 40], [0, 0.78], {
     easing: Easing.out(Easing.cubic),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const danger = interpolate(frame, [95, SCENE_1_DURATION], [0, 1], {
+  const danger = interpolate(frame, [72, SCENE_1_DURATION], [0, 1], {
     easing: Easing.in(Easing.cubic),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  const { opacity: overlayOpacity, translateY: overlayY } = enterUp(frame, 46, 20, 20);
+  const { opacity: overlayOpacity, translateY: overlayY } = enterUp(frame, 32, 16, 20);
 
   return (
     <AbsoluteFill style={{ backgroundColor: colors.navyDeepest }}>
@@ -91,8 +91,8 @@ export const Scene1Hook: React.FC = () => {
       </AbsoluteFill>
 
       <Stage gap={26} justify="flex-end" padTop={90} padBottom={150}>
-        <Kicker delay={58}>Central Vigía</Kicker>
-        <Heading delay={72} size={72}>
+        <Kicker delay={44}>Central Vigía</Kicker>
+        <Heading delay={56} size={72}>
           ¿Y si alguien entra
           <br />
           a tu casa <span style={{ color: colors.blueGlow }}>cuando no estás?</span>

@@ -1,6 +1,7 @@
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
-import { AbsoluteFill } from "remotion";
+import { AbsoluteFill, staticFile } from "remotion";
+import { Audio } from "@remotion/media";
 
 import { Scene1Hook, SCENE_1_DURATION } from "./scenes/Scene1Hook";
 import { Scene2Detection, SCENE_2_DURATION } from "./scenes/Scene2Detection";
@@ -25,6 +26,7 @@ export const TOTAL_DURATION =
 export const CentralVigiaReel: React.FC = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: "#050B22" }}>
+      <Audio src={staticFile("audio/tension-score.mp3")} />
       <TransitionSeries>
         <TransitionSeries.Sequence durationInFrames={SCENE_1_DURATION}>
           <Scene1Hook />

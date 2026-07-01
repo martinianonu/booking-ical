@@ -6,7 +6,7 @@ import { Heading, Kicker, Subtext } from "../components/Typography";
 import { SirenPhoto } from "../components/SirenPhoto";
 import { colors } from "../brand";
 
-export const SCENE_2_DURATION = 88;
+export const SCENE_2_DURATION = 50;
 
 const Ring: React.FC<{ frame: number; delay: number; period: number }> = ({
   frame,
@@ -40,31 +40,31 @@ export const Scene2Detection: React.FC = () => {
     <Background variant="night">
       <GlowOrb size={600} top={-120} left={width / 2 - 300} color={colors.red} opacity={0.18} />
 
-      <Stage gap={40} padTop={230}>
+      <Stage gap={36} padTop={230}>
         <div
           style={{
             position: "relative",
-            width: 200,
-            height: 200,
+            width: 210,
+            height: 210,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Ring frame={frame} delay={0} period={44} />
-          <Ring frame={frame} delay={22} period={44} />
-          <SirenPhoto delay={4} size={200} />
+          <Ring frame={frame} delay={2} period={30} />
+          <Ring frame={frame} delay={16} period={30} />
+          <SirenPhoto delay={2} size={210} />
         </div>
 
-        <Kicker delay={22} color={colors.red}>
+        <Kicker delay={14} color={colors.red}>
           Detección inmediata
         </Kicker>
-        <Heading delay={34} size={84}>
+        <Heading delay={20} size={80}>
           En segundos, tu alarma
           <br />
           <span style={{ color: colors.red }}>detecta el movimiento</span>
         </Heading>
-        <Subtext delay={60} size={40}>
+        <Subtext delay={36} size={38}>
           Sensores de última generación, activos las 24 horas.
         </Subtext>
       </Stage>

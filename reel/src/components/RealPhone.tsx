@@ -7,7 +7,7 @@ export const RealPhone: React.FC<{ delay?: number; width?: number }> = ({
   width = 420,
 }) => {
   const frame = useCurrentFrame();
-  const { opacity, translateY } = enterUp(frame, delay, 28, 70);
+  const { opacity, translateY } = enterUp(frame, delay, 14, 50);
   const float = Math.sin(frame / 45) * 8;
   const glow = pulse(frame, 80, 0.5, 1);
 

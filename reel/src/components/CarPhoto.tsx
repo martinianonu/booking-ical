@@ -7,16 +7,16 @@ export const CarPhoto: React.FC<{ delay?: number; width?: number }> = ({
 }) => {
   const frame = useCurrentFrame();
 
-  const slideX = interpolate(frame, [delay, delay + 40], [-260, 0], {
+  const slideX = interpolate(frame, [delay, delay + 18], [-260, 0], {
     easing: Easing.out(Easing.cubic),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const opacity = interpolate(frame, [delay, delay + 20], [0, 1], {
+  const opacity = interpolate(frame, [delay, delay + 10], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const kenBurns = interpolate(frame, [delay, delay + 130], [1.06, 1.14], {
+  const kenBurns = interpolate(frame, [delay, delay + 60], [1.06, 1.14], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });

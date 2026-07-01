@@ -9,7 +9,7 @@ export const Kicker: React.FC<{
   color?: string;
 }> = ({ children, delay = 0, color = colors.blueGlow }) => {
   const frame = useCurrentFrame();
-  const { opacity, translateY } = enterUp(frame, delay, 18, 24);
+  const { opacity, translateY } = enterUp(frame, delay, 10, 18);
   return (
     <div
       style={{
@@ -44,7 +44,7 @@ export const Heading: React.FC<{
   lineHeight = 1.04,
 }) => {
   const frame = useCurrentFrame();
-  const { opacity, translateY } = enterUp(frame, delay, 24, 50);
+  const { opacity, translateY } = enterUp(frame, delay, 14, 36);
   return (
     <div
       style={{
@@ -71,7 +71,7 @@ export const Subtext: React.FC<{
   color?: string;
 }> = ({ children, delay = 0, size = 44, color = colors.textMuted }) => {
   const frame = useCurrentFrame();
-  const { opacity, translateY } = enterUp(frame, delay, 20, 30);
+  const { opacity, translateY } = enterUp(frame, delay, 12, 22);
   return (
     <div
       style={{

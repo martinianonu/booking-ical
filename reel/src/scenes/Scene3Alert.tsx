@@ -8,30 +8,30 @@ import { HouseIcon } from "../components/Icons";
 import { colors } from "../brand";
 import { enterUp } from "../animation";
 
-export const SCENE_3_DURATION = 115;
+export const SCENE_3_DURATION = 55;
 
 export const Scene3Alert: React.FC = () => {
   const frame = useCurrentFrame();
   const { width } = useVideoConfig();
 
-  const travel = interpolate(frame, [5, 36], [0, 1], {
+  const travel = interpolate(frame, [2, 16], [0, 1], {
     easing: Easing.inOut(Easing.cubic),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const dotOpacity = interpolate(frame, [5, 13, 32, 40], [0, 1, 1, 0], {
+  const dotOpacity = interpolate(frame, [2, 7, 14, 19], [0, 1, 1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const { opacity: operatorOpacity, translateY: operatorY } = enterUp(frame, 24, 22, 40);
+  const { opacity: operatorOpacity, translateY: operatorY } = enterUp(frame, 12, 10, 26);
 
   return (
     <Background variant="night">
       <GlowOrb size={640} top={-140} left={width / 2 - 320} color={colors.blue} opacity={0.2} />
 
       <Stage gap={30} padTop={150} padBottom={110}>
-        <Kicker delay={4}>Respuesta en tiempo real</Kicker>
-        <Heading delay={14} size={78}>
+        <Kicker delay={2}>Respuesta en tiempo real</Kicker>
+        <Heading delay={6} size={78}>
           La alerta llega a nuestra
           <br />
           <span style={{ color: colors.blueGlow }}>central de monitoreo 24/7</span>
@@ -112,7 +112,7 @@ export const Scene3Alert: React.FC = () => {
           <OperatorSilhouette width={520} />
         </div>
 
-        <Subtext delay={52} size={38}>
+        <Subtext delay={38} size={38}>
           Un operador humano confirma la emergencia al instante.
         </Subtext>
       </Stage>

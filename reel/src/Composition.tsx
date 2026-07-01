@@ -7,10 +7,9 @@ import { Scene2Detection, SCENE_2_DURATION } from "./scenes/Scene2Detection";
 import { Scene3Alert, SCENE_3_DURATION } from "./scenes/Scene3Alert";
 import { Scene4Response, SCENE_4_DURATION } from "./scenes/Scene4Response";
 import { Scene5App, SCENE_5_DURATION } from "./scenes/Scene5App";
-import { Scene6Emotion, SCENE_6_DURATION } from "./scenes/Scene6Emotion";
-import { Scene7CTA, SCENE_7_DURATION } from "./scenes/Scene7CTA";
+import { Scene6CTA, SCENE_6_DURATION } from "./scenes/Scene6CTA";
 
-const TRANSITION = 12;
+const TRANSITION = 8;
 
 export const TOTAL_DURATION =
   SCENE_1_DURATION +
@@ -18,9 +17,8 @@ export const TOTAL_DURATION =
   SCENE_3_DURATION +
   SCENE_4_DURATION +
   SCENE_5_DURATION +
-  SCENE_6_DURATION +
-  SCENE_7_DURATION -
-  TRANSITION * 6;
+  SCENE_6_DURATION -
+  TRANSITION * 5;
 
 export const CentralVigiaReel: React.FC = () => {
   return (
@@ -62,14 +60,7 @@ export const CentralVigiaReel: React.FC = () => {
           timing={linearTiming({ durationInFrames: TRANSITION })}
         />
         <TransitionSeries.Sequence durationInFrames={SCENE_6_DURATION}>
-          <Scene6Emotion />
-        </TransitionSeries.Sequence>
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={linearTiming({ durationInFrames: TRANSITION })}
-        />
-        <TransitionSeries.Sequence durationInFrames={SCENE_7_DURATION}>
-          <Scene7CTA />
+          <Scene6CTA />
         </TransitionSeries.Sequence>
       </TransitionSeries>
     </AbsoluteFill>

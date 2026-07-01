@@ -2,7 +2,6 @@ import { useCurrentFrame } from "remotion";
 import { Background } from "../components/Background";
 import { GlowOrb } from "../components/GlowOrb";
 import { Stage } from "../components/Stage";
-import { Subtext } from "../components/Typography";
 import { Logo } from "../components/Logo";
 import { colors } from "../brand";
 import { fontFamily } from "../fonts";
@@ -36,20 +35,18 @@ const Pill: React.FC<{ text: string; delay: number }> = ({ text, delay }) => {
 export const Scene7CTA: React.FC = () => {
   const frame = useCurrentFrame();
   const logo = popIn(frame, 2, 24);
-  const cta = enterUp(frame, 108, 22, 28);
+  const cta = enterUp(frame, 56, 22, 28);
 
   return (
     <Background variant="vertical">
       <GlowOrb size={700} top={-160} left={190} color={colors.blue} opacity={0.22} />
 
-      <Stage gap={26} padTop={230} padBottom={160}>
-        <div style={{ scale: logo.scale, opacity: logo.opacity, marginBottom: 20 }}>
-          <Logo width={420} />
+      <Stage gap={26} padTop={280} padBottom={200}>
+        <div style={{ scale: logo.scale, opacity: logo.opacity, marginBottom: 30 }}>
+          <Logo width={440} />
         </div>
 
-        <Pill text="Monitoreo 24/7" delay={36} />
-        <Pill text="Botón de pánico" delay={50} />
-        <Pill text="Móvil de verificación exclusivo" delay={64} />
+        <Pill text="Monitoreo 24/7" delay={30} />
 
         <div
           style={{
@@ -65,12 +62,8 @@ export const Scene7CTA: React.FC = () => {
             color: colors.navyDeepest,
           }}
         >
-          Escribinos ahora
+          Contactanos
         </div>
-
-        <Subtext delay={126} size={34} color={colors.textFaint}>
-          @centralvigia
-        </Subtext>
       </Stage>
     </Background>
   );

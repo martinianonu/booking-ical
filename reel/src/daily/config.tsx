@@ -3,16 +3,17 @@ import type { InfoReelConfig } from "./InfoReelTemplate";
 // Short, purely informational reels — no dramatized narrative, no
 // testimonials (those are filmed for real by the client). Mirrors the
 // best-performing non-testimonial ads in the account (listicle / how-it-works
-// style), per reel/learnings.json. 10 distinct angles, each with a different
-// step-entrance animation and hero-image treatment (no hero / photo card /
-// full-bleed banner / floating tilt / bobbing phone mock) so the 10 daily
-// videos don't all look and move the same way — some spotlight the app,
-// others the full hardware system.
+// style), per reel/learnings.json. Each of the 10 daily videos combines a
+// different structural layout (list / grid / one-step-at-a-time sequence /
+// pill chips), a different step-entrance animation, and — where a real
+// photo is used — a different hero treatment, so no two videos share the
+// same skeleton. Some spotlight the app, others the full hardware system.
 
 export const dailyConfigs: InfoReelConfig[] = [
   {
     kicker: "Por qué Central Vigía",
     headingLines: ["3 RAZONES PARA TENER", "MONITOREO REAL"],
+    layout: "list",
     stepAnimation: "slideUp",
     steps: [
       { icon: "headset", label: "Monitoreo 24/7 con operadores reales" },
@@ -24,6 +25,7 @@ export const dailyConfigs: InfoReelConfig[] = [
   {
     kicker: "Cómo funciona",
     headingLines: ["¿QUÉ PASA CUANDO", "SUENA TU ALARMA?"],
+    layout: "grid",
     stepAnimation: "slideSide",
     steps: [
       { icon: "sensor", label: "Se detecta el movimiento al instante" },
@@ -35,6 +37,7 @@ export const dailyConfigs: InfoReelConfig[] = [
   {
     kicker: "Dato",
     headingLines: ["UNA ALARMA SIN MONITOREO", "SOLO HACE RUIDO"],
+    layout: "sequence",
     stepAnimation: "scaleRotate",
     steps: [
       { icon: "shield", label: "Con Central Vigía, cada alerta la ve un operador real" },
@@ -46,6 +49,7 @@ export const dailyConfigs: InfoReelConfig[] = [
   {
     kicker: "Ojo con esto",
     headingLines: ["3 ERRORES COMUNES", "AL ELEGIR UNA ALARMA"],
+    layout: "chips",
     stepAnimation: "wipe",
     steps: [
       { icon: "bell", label: "Instalarla sin monitoreo real" },
@@ -59,6 +63,7 @@ export const dailyConfigs: InfoReelConfig[] = [
     headingLines: ["TODO LO QUE INCLUYE", "UN MONITOREO DE VERDAD"],
     heroAsset: "siren",
     heroLayout: "card",
+    layout: "list",
     stepAnimation: "slideUp",
     steps: [
       { icon: "sensor", label: "Sensores activos las 24 horas" },
@@ -72,6 +77,7 @@ export const dailyConfigs: InfoReelConfig[] = [
     headingLines: ["3 PREGUNTAS QUE TENÉS", "QUE HACERTE"],
     heroAsset: "systemLineup",
     heroLayout: "fullBleed",
+    layout: "chips",
     stepAnimation: "scaleRotate",
     steps: [
       { icon: "headset", label: "¿Quién atiende tu alerta?" },
@@ -85,6 +91,7 @@ export const dailyConfigs: InfoReelConfig[] = [
     headingLines: ["ASÍ SE VE EL CONTROL", "DESDE TU CELULAR"],
     heroAsset: "app",
     heroLayout: "phoneMock",
+    layout: "list",
     stepAnimation: "slideSide",
     steps: [
       { icon: "phone", label: "Armar y desarmar en un toque" },
@@ -98,6 +105,7 @@ export const dailyConfigs: InfoReelConfig[] = [
     headingLines: ["POR QUÉ UN MÓVIL DE", "VERIFICACIÓN SUMA"],
     heroAsset: "car",
     heroLayout: "card",
+    layout: "grid",
     stepAnimation: "wipe",
     steps: [
       { icon: "car", label: "Confirma la situación antes de alarmar a nadie" },
@@ -111,6 +119,7 @@ export const dailyConfigs: InfoReelConfig[] = [
     headingLines: ["ASÍ TRABAJA UN OPERADOR", "DE CENTRAL VIGÍA"],
     heroAsset: "camera",
     heroLayout: "floatTilt",
+    layout: "sequence",
     stepAnimation: "slideUp",
     steps: [
       { icon: "bell", label: "Recibe la alerta al instante" },
@@ -124,6 +133,7 @@ export const dailyConfigs: InfoReelConfig[] = [
     headingLines: ["MONITOREO 24/7:", "QUÉ SIGNIFICA EN LA PRÁCTICA"],
     heroAsset: "houseSystem",
     heroLayout: "fullBleed",
+    layout: "grid",
     stepAnimation: "scaleRotate",
     steps: [
       { icon: "sensor", label: "De día" },

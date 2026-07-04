@@ -51,9 +51,15 @@ export type HeroAssetKey = keyof typeof HERO_ASSETS;
 // the app on its own.
 export type HeroLayout = "card" | "fullBleed" | "floatTilt" | "phoneMock";
 
-// Four distinct entrance styles for the step rows, so consecutive daily
-// videos don't all move the same way.
+// Four distinct entrance styles for individual step rows.
 export type StepAnimation = "slideUp" | "slideSide" | "scaleRotate" | "wipe";
+
+// Four structurally different ways to present the step list, so videos
+// don't all share the same skeleton — just a different move on the same
+// shape. "list" stacks full-width rows, "grid" wraps compact cards two per
+// row, "sequence" reveals one big step at a time instead of listing all
+// three, and "chips" uses small pill-shaped bubbles.
+export type ReelLayout = "list" | "grid" | "sequence" | "chips";
 
 export type InfoStep = {
   icon: IconKey;
@@ -66,6 +72,7 @@ export type InfoReelConfig = {
   heroAsset?: HeroAssetKey;
   heroLayout?: HeroLayout; // default "card"
   stepAnimation?: StepAnimation; // default "slideUp"
+  layout?: ReelLayout; // default "list"
   steps: InfoStep[];
   cta: string;
 };
@@ -192,31 +199,38 @@ const HeroAsset: React.FC<{ asset: HeroAssetKey; delay: number; layout: HeroLayo
   );
 };
 
-const Step: React.FC<{
-  step: InfoStep;
-  index: number;
-  delay: number;
-  animation: StepAnimation;
-}> = ({ step, index, delay, animation }) => {
+// Shared entrance transform for a single step, reused by every ReelLayout.
+const useStepAnimStyle = (
+  animation: StepAnimation,
+  delay: number,
+  index: number,
+): React.CSSProperties => {
   const frame = useCurrentFrame();
-  const Icon = ICONS[step.icon];
-
-  let style: React.CSSProperties;
   if (animation === "slideSide") {
     const side = index % 2 === 0 ? -1 : 1;
     const { opacity, translateX } = slideSide(frame, delay, side, 20, 140);
-    style = { opacity, translate: `${translateX}px 0` };
-  } else if (animation === "scaleRotate") {
-    const { opacity, scale, rotate } = scaleRotateIn(frame, delay, 22);
-    style = { opacity, transform: `scale(${scale}) rotate(${rotate}deg)` };
-  } else if (animation === "wipe") {
-    const { opacity, progress } = wipeReveal(frame, delay, 18);
-    style = { opacity, clipPath: `inset(0 ${100 - progress}% 0 0)` };
-  } else {
-    const { opacity, translateY } = enterUp(frame, delay, 14, 30);
-    style = { opacity, translate: `0 ${translateY}px` };
+    return { opacity, translate: `${translateX}px 0` };
   }
+  if (animation === "scaleRotate") {
+    const { opacity, scale, rotate } = scaleRotateIn(frame, delay, 22);
+    return { opacity, transform: `scale(${scale}) rotate(${rotate}deg)` };
+  }
+  if (animation === "wipe") {
+    const { opacity, progress } = wipeReveal(frame, delay, 18);
+    return { opacity, clipPath: `inset(0 ${100 - progress}% 0 0)` };
+  }
+  const { opacity, translateY } = enterUp(frame, delay, 14, 30);
+  return { opacity, translate: `0 ${translateY}px` };
+};
 
+const ListStep: React.FC<{ step: InfoStep; index: number; delay: number; animation: StepAnimation }> = ({
+  step,
+  index,
+  delay,
+  animation,
+}) => {
+  const style = useStepAnimStyle(animation, delay, index);
+  const Icon = ICONS[step.icon];
   return (
     <div
       style={{
@@ -254,6 +268,227 @@ const Step: React.FC<{
   );
 };
 
+const GridStep: React.FC<{
+  step: InfoStep;
+  index: number;
+  delay: number;
+  animation: StepAnimation;
+  span: boolean;
+}> = ({ step, index, delay, animation, span }) => {
+  const style = useStepAnimStyle(animation, delay, index);
+  const Icon = ICONS[step.icon];
+  return (
+    <div
+      style={{
+        ...style,
+        gridColumn: span ? "1 / span 2" : undefined,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        textAlign: "center",
+        gap: 14,
+        background: "rgba(255,255,255,0.05)",
+        border: `1px solid ${colors.blueGlow}33`,
+        borderRadius: 24,
+        padding: "30px 22px",
+      }}
+    >
+      <div
+        style={{
+          width: 66,
+          height: 66,
+          borderRadius: 18,
+          background: "rgba(47,107,255,0.16)",
+          border: `2px solid ${colors.blueGlow}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={32} color={colors.white} />
+      </div>
+      <div style={{ fontFamily, fontWeight: 700, fontSize: 27, color: colors.white, lineHeight: 1.25 }}>
+        {step.label}
+      </div>
+    </div>
+  );
+};
+
+const ChipStep: React.FC<{ step: InfoStep; index: number; delay: number; animation: StepAnimation }> = ({
+  step,
+  index,
+  delay,
+  animation,
+}) => {
+  const style = useStepAnimStyle(animation, delay, index);
+  const Icon = ICONS[step.icon];
+  return (
+    <div
+      style={{
+        ...style,
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        background: "rgba(255,255,255,0.08)",
+        border: `1px solid ${colors.blueGlow}44`,
+        borderRadius: 100,
+        padding: "12px 30px 12px 12px",
+        width: "fit-content",
+        maxWidth: 760,
+      }}
+    >
+      <div
+        style={{
+          width: 46,
+          height: 46,
+          borderRadius: "50%",
+          background: colors.blueGlow,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={23} color={colors.navyDeepest} />
+      </div>
+      <div style={{ fontFamily, fontWeight: 700, fontSize: 27, color: colors.white }}>{step.label}</div>
+    </div>
+  );
+};
+
+const SEQUENCE_STEP_HEIGHT = 300;
+
+const SequenceStep: React.FC<{ step: InfoStep; index: number; start: number }> = ({
+  step,
+  index,
+  start,
+}) => {
+  const frame = useCurrentFrame();
+  const inD = 10;
+  const holdD = STEP_STAGGER - 14;
+  const outD = 8;
+  const opacity = interpolate(
+    frame,
+    [start, start + inD, start + inD + holdD, start + inD + holdD + outD],
+    [0, 1, 1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const scale = interpolate(frame, [start, start + inD], [0.7, 1], {
+    easing: Easing.bezier(0.34, 1.56, 0.64, 1),
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const Icon = ICONS[step.icon];
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        opacity,
+        transform: `scale(${scale})`,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 20,
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          fontFamily,
+          fontWeight: 900,
+          fontSize: 130,
+          color: `${colors.blueGlow}2A`,
+        }}
+      >
+        {index + 1}
+      </div>
+      <div
+        style={{
+          width: 108,
+          height: 108,
+          borderRadius: 28,
+          background: "rgba(47,107,255,0.16)",
+          border: `3px solid ${colors.blueGlow}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Icon size={52} color={colors.white} />
+      </div>
+      <div
+        style={{
+          fontFamily,
+          fontWeight: 800,
+          fontSize: 38,
+          color: colors.white,
+          textAlign: "center",
+          maxWidth: 680,
+          lineHeight: 1.25,
+        }}
+      >
+        {step.label}
+      </div>
+    </div>
+  );
+};
+
+const StepsArea: React.FC<{
+  layout: ReelLayout;
+  steps: InfoStep[];
+  stepsStart: number;
+  animation: StepAnimation;
+}> = ({ layout, steps, stepsStart, animation }) => {
+  if (layout === "grid") {
+    return (
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, width: 820, marginTop: 14 }}>
+        {steps.map((step, i) => (
+          <GridStep
+            key={i}
+            step={step}
+            index={i}
+            delay={stepsStart + i * STEP_STAGGER}
+            animation={animation}
+            span={steps.length % 2 === 1 && i === steps.length - 1}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (layout === "chips") {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginTop: 14 }}>
+        {steps.map((step, i) => (
+          <ChipStep key={i} step={step} index={i} delay={stepsStart + i * STEP_STAGGER} animation={animation} />
+        ))}
+      </div>
+    );
+  }
+
+  if (layout === "sequence") {
+    return (
+      <div style={{ position: "relative", width: 820, height: SEQUENCE_STEP_HEIGHT, marginTop: 14 }}>
+        {steps.map((step, i) => (
+          <SequenceStep key={i} step={step} index={i} start={stepsStart + i * STEP_STAGGER} />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 14 }}>
+      {steps.map((step, i) => (
+        <ListStep key={i} step={step} index={i} delay={stepsStart + i * STEP_STAGGER} animation={animation} />
+      ))}
+    </div>
+  );
+};
+
 const STEPS_START: Record<"none" | HeroLayout, number> = {
   none: 34,
   card: 50,
@@ -271,6 +506,7 @@ export const InfoReel: React.FC<InfoReelConfig> = ({
   heroAsset,
   heroLayout = "card",
   stepAnimation = "slideUp",
+  layout = "list",
   steps,
   cta,
 }) => {
@@ -303,17 +539,7 @@ export const InfoReel: React.FC<InfoReelConfig> = ({
           <HeroAsset asset={heroAsset} delay={HERO_DELAY} layout={heroLayout} />
         ) : null}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 14 }}>
-          {steps.map((step, i) => (
-            <Step
-              key={i}
-              step={step}
-              index={i}
-              delay={stepsStart + i * STEP_STAGGER}
-              animation={stepAnimation}
-            />
-          ))}
-        </div>
+        <StepsArea layout={layout} steps={steps} stepsStart={stepsStart} animation={stepAnimation} />
 
         <div style={{ scale: logo.scale, opacity: logo.opacity, marginTop: 22 }}>
           <Logo width={260} />

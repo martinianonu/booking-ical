@@ -29,7 +29,7 @@ export const RemotionRoot: React.FC = () => {
           key={i}
           id={`Daily${i + 1}`}
           component={InfoReel}
-          durationInFrames={infoReelDuration(config.steps.length)}
+          durationInFrames={infoReelDuration(config.steps.length, Boolean(config.heroAsset))}
           fps={30}
           width={1080}
           height={1920}

@@ -1,0 +1,85 @@
+{
+  "brand": {
+    "colors": "src/brand.ts",
+    "fonts": "src/fonts.ts",
+    "assets": [
+      "public/house-photo.png (real house w/ VIGIA plaque, use for night/situation scenes)",
+      "public/siren-photo.png (real siren device)",
+      "public/car-photo.png (real Tesla-style car, use for móvil de verificación)",
+      "public/app-screenshot.png (real app screenshot, low-res ~235x534, keep display width <= 450px)",
+      "public/person-phone.png (real person holding phone, use for notification scenes)",
+      "public/logo-vigia.png (real transparent logo)"
+    ],
+    "reusable_components": "src/components/*.tsx (Background, Stage, Heading, Kicker, Subtext, RealPhone, CarPhoto, SirenPhoto, OperatorSilhouette, IntrusionOverlay, Logo, Watermark)"
+  },
+  "instagram_metrics": {
+    "status": "not_yet_available",
+    "note": "ads_get_ig_accounts on ad_account_id 1208938201002039 (CENTRAL VIGIA) returned 'gradually rolled out, check back later' as of 2026-07-04. Retry this each run; once it works, pull ads_get_ig_media + insights for the linked IG account and cross-check organic engagement too.",
+    "ad_account_id": "1208938201002039",
+    "page_id": "163481243738167"
+  },
+  "ads_performance": {
+    "status": "available",
+    "how_to_refresh": "mcp__FACEBOOK__ads_get_ad_entities, ad_account_id 1208938201002039, level=ad, date_preset=last_30d, filtering campaign_id 120231221213070286 (or omit filter to see all campaigns). Re-pull every run and update this block + the ranked list below.",
+    "last_pulled": "2026-07-04",
+    "campaign": "Central Vigia Seguridad - Interacción 2026 (OUTCOME_ENGAGEMENT, only active campaign)",
+    "ranked_by_cost_per_result_and_ctr": [
+      {
+        "rank": 1,
+        "ad_name": "1- Testimonio pardo",
+        "style": "customer testimonial",
+        "ctr": "2.89%",
+        "cost_per_result_ars": 2203.96,
+        "reach": 2353,
+        "thruplay_rate": "69.6% (243/349 to 25%)",
+        "verdict": "best performer, reliable sample — lean into testimonial/social-proof style"
+      },
+      {
+        "rank": 2,
+        "ad_name": "Pat1: 3 razones para instalar CV",
+        "style": "listicle / reasons-to-buy",
+        "ctr": "1.77%",
+        "cost_per_result_ars": 3851.64,
+        "reach": 2242,
+        "verdict": "decent reach, weaker efficiency than testimonial"
+      },
+      {
+        "rank": 3,
+        "ad_name": "3- Generico vs Monitoreo",
+        "style": "unknown / comparison",
+        "ctr": "1.84%",
+        "cost_per_result_ars": 757.67,
+        "reach": 248,
+        "verdict": "cheapest cost/result but tiny sample (326 impressions, 1 result) — low confidence, re-check once more spend accrues"
+      },
+      {
+        "rank": 4,
+        "ad_name": "Pat2: Importancia monitoreo",
+        "style": "informational / why-monitoring-matters",
+        "ctr": "1.02%",
+        "cost_per_result_ars": 2620.44,
+        "reach": 931,
+        "verdict": "below-average CTR"
+      },
+      {
+        "rank": 5,
+        "ad_name": "2- Movil exclusivo",
+        "style": "situation/dispatch narrative (closest to the Remotion reels built so far)",
+        "ctr": "0.90%",
+        "cost_per_result_ars": null,
+        "reach": 1006,
+        "verdict": "WORST performer — lowest CTR, zero messaging conversations. The 'intrusion -> alert -> móvil despachado' narrative arc used in both Remotion reels overlaps this angle; treat as a signal to de-emphasize pure dispatch-drama framing and shift weight toward testimonial/social-proof."
+      }
+    ]
+  },
+  "history": [],
+  "insights": {
+    "what_worked": [
+      "Customer testimonial framing (real client talking about the service) — best CTR (2.89%) and lowest reliable cost per result (~2204 ARS)."
+    ],
+    "what_to_avoid": [
+      "Pure 'móvil exclusivo despachado' dispatch-drama as the main hook — currently the worst-performing ad (CTR 0.90%, 0 conversions). Fine as one beat inside a longer story, but should not be the headline angle."
+    ],
+    "notes": "Real Meta Ads data pulled 2026-07-04 (see ads_performance above). Until IG organic metrics are available, treat ads_performance as the primary signal. Rotate creative toward testimonial/social-proof and away from leading with the dispatch/móvil angle. Keep CTA short and verification-focused (not price-focused, per client's explicit preference)."
+  }
+}

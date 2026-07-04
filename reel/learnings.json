@@ -73,13 +73,21 @@
     ]
   },
   "history": [],
+  "policy": {
+    "never_generate": "Testimonials. The client films real customer testimonials themselves — do not fabricate a fake customer, photo, quote, or voice pretending to be a testimonial, ever, even though 'Testimonio pardo' is the top-performing ad. Exclude testimonial-style entries entirely when ranking 'what to replicate'.",
+    "videos_per_day": 10,
+    "length": "short, Instagram Reels format — aim ~8-15s each, not the ~13-27s longer cinematic cuts built earlier in the project.",
+    "default_direction_2026-07-04": "Client asked to replicate whatever the best NON-testimonial performer is. Excluding the testimonial, the best-performing ads are informational/listicle style ('Pat1: 3 razones para instalar CV', '3- Generico vs Monitoreo', 'Pat2: Importancia monitoreo') — all plain educational content about the service, not dramatized narrative. Default to short informational/educational reels (how monitoring works, why it matters, what happens step by step) unless fresher ad data names a different non-testimonial winner."
+  },
   "insights": {
     "what_worked": [
-      "Customer testimonial framing (real client talking about the service) — best CTR (2.89%) and lowest reliable cost per result (~2204 ARS)."
+      "Testimonial framing had the best raw numbers (CTR 2.89%) but is EXCLUDED from replication per client policy above — it's filmed for real, not to be faked.",
+      "Among content that can be replicated in Remotion, informational/listicle style ('3 razones...', 'Importancia del monitoreo...') outperforms dramatized intrusion/dispatch narrative."
     ],
     "what_to_avoid": [
-      "Pure 'móvil exclusivo despachado' dispatch-drama as the main hook — currently the worst-performing ad (CTR 0.90%, 0 conversions). Fine as one beat inside a longer story, but should not be the headline angle."
+      "Pure 'móvil exclusivo despachado' dispatch-drama as the main hook — currently the worst-performing ad (CTR 0.90%, 0 conversions). Fine as one beat inside a longer story, but should not be the headline angle.",
+      "Never fabricate testimonials — see policy.never_generate."
     ],
-    "notes": "Real Meta Ads data pulled 2026-07-04 (see ads_performance above). Until IG organic metrics are available, treat ads_performance as the primary signal. Rotate creative toward testimonial/social-proof and away from leading with the dispatch/móvil angle. Keep CTA short and verification-focused (not price-focused, per client's explicit preference)."
+    "notes": "Real Meta Ads data pulled 2026-07-04 (see ads_performance above). Until IG organic metrics are available, treat ads_performance as the primary signal, always excluding testimonial rows from what gets replicated. Keep CTA short and verification-focused (not price-focused, per client's explicit preference)."
   }
 }

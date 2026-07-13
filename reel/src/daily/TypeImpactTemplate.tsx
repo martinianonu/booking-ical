@@ -9,13 +9,16 @@ import { condensedFont, techFont, premiumFont } from "./typeFonts";
 import { ICONS, type IconKey } from "./InfoReelTemplate";
 import { enterUp } from "../animation";
 
-// Three deliberately different typography-led designs for the same kind
-// of informational content: "condensed" is a tall poster-style headline
-// with huge ghost numerals, "tech" is angular/uppercase with bracket
-// numbering, "premium" is a clean editorial layout with generous
-// whitespace. Text sizes are pushed noticeably larger than the InfoReel
-// template across all three — the point is visual impact, not density.
-export type TypeStyle = "condensed" | "tech" | "premium";
+// Deliberately different typography-led designs for the same kind of
+// informational content: "condensed" is a tall poster-style headline with
+// huge ghost numerals, "tech" is angular/uppercase with bracket numbering,
+// "premium" is a clean editorial layout with generous whitespace, and
+// "professional" is the refined, on-brand version — same large scale as
+// the others, but in the client's actual brand font (Outfit), sentence
+// case instead of shouting caps, and a restrained, corporate finish. Text
+// sizes are pushed noticeably larger than the InfoReel template across
+// all of them — the point is visual impact, not density.
+export type TypeStyle = "condensed" | "tech" | "premium" | "professional";
 
 export type TypeStep = {
   icon: IconKey;
@@ -224,8 +227,15 @@ const TechStep: React.FC<{ step: TypeStep; index: number; delay: number }> = ({ 
   );
 };
 
-// --- premium: clean editorial rows, light numerals, thin rule ---
-const PremiumStep: React.FC<{ step: TypeStep; index: number; delay: number }> = ({ step, index, delay }) => {
+// --- premium / professional: clean editorial rows, light numerals, thin
+// rule. Shared between both styles, just with a different font + accent.
+const PremiumStep: React.FC<{
+  step: TypeStep;
+  index: number;
+  delay: number;
+  font?: string;
+  accent?: string;
+}> = ({ step, index, delay, font = premiumFont, accent = colors.blueGlow }) => {
   const frame = useCurrentFrame();
   const { opacity, translateY } = enterUp(frame, delay, 18, 34);
   const Icon = ICONS[step.icon];
@@ -242,31 +252,31 @@ const PremiumStep: React.FC<{ step: TypeStep; index: number; delay: number }> = 
     >
       <div
         style={{
-          fontFamily: premiumFont,
+          fontFamily: font,
           fontWeight: 500,
-          fontSize: 44,
+          fontSize: 40,
           color: colors.textFaint,
           flexShrink: 0,
         }}
       >
-        {index + 1}
+        {String(index + 1).padStart(2, "0")}
       </div>
       <div style={{ flex: 1 }}>
         <div
           style={{
-            fontFamily: premiumFont,
-            fontWeight: 800,
-            fontSize: 42,
+            fontFamily: font,
+            fontWeight: 700,
+            fontSize: 40,
             color: colors.white,
-            lineHeight: 1.2,
+            lineHeight: 1.25,
             marginBottom: 14,
           }}
         >
           {step.label}
         </div>
-        <div style={{ height: 2, width: 64, background: colors.blueGlow }} />
+        <div style={{ height: 2, width: 56, background: accent }} />
       </div>
-      <Icon size={30} color={colors.blueGlow} />
+      <Icon size={28} color={accent} />
     </div>
   );
 };
@@ -301,7 +311,14 @@ export const TypeImpact: React.FC<TypeImpactConfig> = ({ kicker, headingLines, s
     background: style === "tech" ? colors.cyan : colors.green,
     borderRadius: style === "condensed" ? 6 : style === "tech" ? 0 : 999,
     padding: "18px 46px",
-    fontFamily: style === "condensed" ? condensedFont : style === "tech" ? techFont : premiumFont,
+    fontFamily:
+      style === "condensed"
+        ? condensedFont
+        : style === "tech"
+          ? techFont
+          : style === "professional"
+            ? bodyFont
+            : premiumFont,
     fontWeight: 800,
     fontSize: 30,
     letterSpacing: style === "tech" ? 2 : 0,
@@ -363,6 +380,45 @@ export const TypeImpact: React.FC<TypeImpactConfig> = ({ kicker, headingLines, s
             <Logo width={240} />
           </div>
           <div style={ctaStyle}>{cta}</div>
+        </Stage>
+      </Background>
+    );
+  }
+
+  if (style === "professional") {
+    return (
+      <Background variant="night">
+        <GlowOrb size={600} top={-160} left={240} color={colors.blue} opacity={0.15} />
+        <Stage gap={38} padTop={170} padBottom={90} align="flex-start" justify="center">
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 40, height: 2, background: colors.blueGlow }} />
+            <div style={kickerStyle}>{kicker}</div>
+          </div>
+          <KineticHeading
+            lines={headingLines}
+            delay={INTRO_DELAY + 6}
+            font={bodyFont}
+            size={82}
+            weight={800}
+            uppercase={false}
+            align="left"
+          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 36, marginTop: 8, width: "100%" }}>
+            {steps.map((step, i) => (
+              <PremiumStep
+                key={i}
+                step={step}
+                index={i}
+                delay={stepsStart + i * STEP_STAGGER}
+                font={bodyFont}
+                accent={colors.blueGlow}
+              />
+            ))}
+          </div>
+          <div style={{ opacity: logoOpacity, translate: `0 ${logoY}px`, marginTop: 16, alignSelf: "center" }}>
+            <Logo width={240} />
+          </div>
+          <div style={{ ...ctaStyle, alignSelf: "center" }}>{cta}</div>
         </Stage>
       </Background>
     );

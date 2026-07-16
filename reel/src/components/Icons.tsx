@@ -130,3 +130,38 @@ export const SensorIcon: React.FC<{ size?: number; color?: string }> = ({
     <path d="M24 39 V44" />
   </svg>
 );
+
+export const CheckIcon: React.FC<{ size?: number; color?: string }> = ({
+  size = 44,
+  color = colors.white,
+}) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" {...stroke(color)}>
+    <path d="M10 25 L19 34 L38 14" />
+  </svg>
+);
+
+export const BoltIcon: React.FC<{ size?: number; color?: string }> = ({
+  size = 44,
+  color = colors.white,
+}) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" {...stroke(color)}>
+    <path d="M26 4 L11 27 H22 L20 44 L38 19 H27 Z" strokeLinejoin="round" />
+  </svg>
+);
+
+export const WhatsAppIcon: React.FC<{ size?: number; color?: string; glyphColor?: string }> = ({
+  size = 44,
+  color = colors.white,
+  glyphColor = colors.navyDeepest,
+}) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+    <path
+      d="M24 6 C14.6 6 7 13.6 7 23 C7 26.1 7.8 29 9.4 31.5 L7 42 L17.8 39.7 C20.2 41 22.5 41.9 24 41.9 C33.4 41.9 41 34.3 41 24.9 C41 15.5 33.4 6 24 6 Z"
+      fill={color}
+    />
+    <path
+      d="M17.6 15.9 C17.1 15.9 16.4 16 15.8 16.7 C15.3 17.4 13.8 18.7 13.8 21.5 C13.8 24.3 15.9 26.9 16.2 27.3 C16.5 27.7 20 33.4 25.6 35.6 C30.3 37.4 31.2 37 32.2 36.9 C33.2 36.8 35.4 35.6 35.9 34.3 C36.3 33 36.3 31.9 36.2 31.6 C36 31.4 35.6 31.2 34.9 30.9 C34.3 30.6 31.3 29.1 30.7 28.9 C30.1 28.7 29.7 28.6 29.3 29.2 C28.9 29.8 27.8 31.1 27.4 31.5 C27.1 31.9 26.8 32 26.2 31.7 C25.6 31.4 23.6 30.7 21.2 28.6 C19.3 26.9 18 24.9 17.7 24.3 C17.4 23.7 17.7 23.4 18 23.1 C18.3 22.8 18.6 22.4 18.9 22 C19.2 21.7 19.3 21.4 19.5 21 C19.7 20.6 19.6 20.2 19.5 19.9 C19.3 19.6 18 16.6 17.6 15.9 Z"
+      fill={glyphColor}
+    />
+  </svg>
+);

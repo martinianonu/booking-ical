@@ -2,11 +2,11 @@
 // (app UI, promo graphics, and website screenshots).
 
 export const colors = {
-  navyDeepest: "#050B22",
-  navy: "#0A1440",
-  navyLight: "#132563",
-  blue: "#2F6BFF",
-  blueGlow: "#5FA0FF",
+  navyDeepest: "#060F26",
+  navy: "#0A1A3A",
+  navyLight: "#16305C",
+  blue: "#1E5FD8",
+  blueGlow: "#5B8FE8",
   cyan: "#7FD4FF",
   red: "#E43D45",
   amber: "#F0A93A",

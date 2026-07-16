@@ -6,6 +6,7 @@ import { InfoReel, infoReelDuration } from "./daily/InfoReelTemplate";
 import { dailyConfigs } from "./daily/config";
 import { TypeImpact, typeImpactDuration } from "./daily/TypeImpactTemplate";
 import { typeImpactConfigs } from "./daily/typeImpactConfig";
+import { WhatsAppAd, WHATSAPP_AD_DURATION } from "./whatsapp/WhatsAppAd";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -53,6 +54,14 @@ export const RemotionRoot: React.FC = () => {
           defaultProps={config}
         />
       ))}
+      <Composition
+        id="WhatsAppAd"
+        component={WhatsAppAd}
+        durationInFrames={WHATSAPP_AD_DURATION}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
     </>
   );
 };

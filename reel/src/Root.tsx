@@ -7,6 +7,7 @@ import { dailyConfigs } from "./daily/config";
 import { TypeImpact, typeImpactDuration } from "./daily/TypeImpactTemplate";
 import { typeImpactConfigs } from "./daily/typeImpactConfig";
 import { WhatsAppAd, WHATSAPP_AD_DURATION } from "./whatsapp/WhatsAppAd";
+import { Slide1Hook, Slide2Problem, Slide3Solution, Slide4CTA } from "./carousel/CarouselSlides";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -62,6 +63,17 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
       />
+      {[Slide1Hook, Slide2Problem, Slide3Solution, Slide4CTA].map((Slide, i) => (
+        <Composition
+          key={i}
+          id={`Carousel${i + 1}`}
+          component={Slide}
+          durationInFrames={30}
+          fps={30}
+          width={1080}
+          height={1350}
+        />
+      ))}
     </>
   );
 };

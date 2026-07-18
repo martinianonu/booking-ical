@@ -1,6 +1,6 @@
 import { AbsoluteFill, Img, staticFile } from "remotion";
-import { Background } from "../components/Background";
 import { GlowOrb } from "../components/GlowOrb";
+import { Grain } from "../components/Background";
 import { Stage } from "../components/Stage";
 import { Logo } from "../components/Logo";
 import { IntrusionOverlay } from "../components/IntrusionOverlay";
@@ -12,7 +12,24 @@ import { condensedFont } from "../daily/typeFonts";
 
 // Static (non-animated) 4:5 carousel slides for Instagram feed, reusing the
 // same narrative arc and visual language as the 60s WhatsApp ad: hook,
-// problem, solution, call-to-action.
+// problem, solution, call-to-action. Every slide shares the same photo-
+// backed treatment, dot grid, and closing brand footer so the four read as
+// one consistent, professional set rather than four separate looks.
+
+const DotGrid: React.FC = () => {
+  const cols = 6;
+  const rows = 6;
+  const gap = 20;
+  return (
+    <svg width={cols * gap} height={rows * gap} style={{ position: "absolute", top: 60, right: 60, opacity: 0.45 }}>
+      {Array.from({ length: cols }).map((_, x) =>
+        Array.from({ length: rows }).map((_, y) => (
+          <circle key={`${x}-${y}`} cx={x * gap + gap / 2} cy={y * gap + gap / 2} r={2.6} fill={colors.blueGlow} />
+        )),
+      )}
+    </svg>
+  );
+};
 
 const SlideKicker: React.FC<{ children: React.ReactNode; color?: string }> = ({
   children,
@@ -64,41 +81,96 @@ const SlideNumber: React.FC<{ n: number }> = ({ n }) => (
       right: 64,
       fontFamily: condensedFont,
       fontWeight: 700,
-      fontSize: 30,
-      color: colors.textFaint,
+      fontSize: 26,
+      color: colors.textMuted,
       letterSpacing: 1,
+      background: "rgba(6,15,38,0.55)",
+      border: `1px solid ${colors.blueGlow}33`,
+      borderRadius: 20,
+      padding: "6px 16px",
     }}
   >
     {n}/4
   </div>
 );
 
-// ---------- Slide 1: hook ----------
-export const Slide1Hook: React.FC = () => (
-  <AbsoluteFill style={{ backgroundColor: colors.navyDeepest }}>
+const SlideFooter: React.FC = () => (
+  <div
+    style={{
+      position: "absolute",
+      bottom: 48,
+      left: 0,
+      right: 0,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 6,
+    }}
+  >
+    <div style={{ height: 1, width: 80, background: `${colors.textFaint}55`, marginBottom: 14 }} />
+    <div
+      style={{
+        fontFamily: condensedFont,
+        fontWeight: 700,
+        fontSize: 22,
+        letterSpacing: 1.5,
+        color: colors.textMuted,
+      }}
+    >
+      CENTRAL VIGÍA
+    </div>
+    <div style={{ fontFamily: bodyFont, fontWeight: 500, fontSize: 18, color: colors.textFaint }}>
+      centralvigiaseguridad.com
+    </div>
+  </div>
+);
+
+const PhotoBackdrop: React.FC<{
+  src: string;
+  brightness?: number;
+  saturate?: number;
+  scrim?: string;
+}> = ({ src, brightness = 0.4, saturate = 0.4, scrim }) => (
+  <>
     <AbsoluteFill style={{ overflow: "hidden" }}>
       <Img
-        src={staticFile("house-photo.png")}
-        style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.42) saturate(0.35)" }}
+        src={staticFile(src)}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          filter: `brightness(${brightness}) saturate(${saturate})`,
+        }}
       />
     </AbsoluteFill>
     <AbsoluteFill
       style={{
-        background: `linear-gradient(180deg, rgba(3,6,20,0.35) 0%, rgba(3,6,20,0.55) 55%, rgba(3,6,20,0.85) 100%)`,
+        background:
+          scrim ??
+          `linear-gradient(180deg, rgba(6,15,38,0.4) 0%, rgba(6,15,38,0.62) 55%, rgba(6,15,38,0.92) 100%)`,
       }}
     />
+    <Grain />
+  </>
+);
+
+// ---------- Slide 1: hook ----------
+export const Slide1Hook: React.FC = () => (
+  <AbsoluteFill style={{ backgroundColor: colors.navyDeepest }}>
+    <PhotoBackdrop src="house-photo.png" brightness={0.42} saturate={0.35} />
+    <DotGrid />
     <SlideNumber n={1} />
-    <Stage gap={22} justify="flex-end" padTop={90} padBottom={150}>
+    <Stage gap={22} justify="flex-end" padTop={90} padBottom={230}>
       <SlideKicker>Central Vigía</SlideKicker>
       <SlideHeadline
-        size={64}
+        size={62}
         lines={[{ text: "¿Una sirena alcanza" }, { text: "para protegerte?", accent: true }]}
       />
       <div
         style={{
           fontFamily: bodyFont,
           fontWeight: 600,
-          fontSize: 32,
+          fontSize: 30,
           lineHeight: 1.35,
           color: colors.textMuted,
           maxWidth: 780,
@@ -107,41 +179,38 @@ export const Slide1Hook: React.FC = () => (
         Una sirena sola no siempre es suficiente para proteger tu casa o tu negocio.
       </div>
     </Stage>
+    <SlideFooter />
   </AbsoluteFill>
 );
 
 // ---------- Slide 2: problem ----------
 export const Slide2Problem: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: colors.navyDeepest }}>
-    <AbsoluteFill style={{ overflow: "hidden" }}>
-      <Img
-        src={staticFile("house-photo.png")}
-        style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.4) saturate(0.32)" }}
-      />
-    </AbsoluteFill>
-    <AbsoluteFill
-      style={{
-        background: `linear-gradient(180deg, rgba(3,6,20,0.35) 0%, rgba(3,6,20,0.6) 55%, rgba(3,6,20,0.86) 100%)`,
-      }}
+    <PhotoBackdrop
+      src="house-photo.png"
+      brightness={0.4}
+      saturate={0.32}
+      scrim={`linear-gradient(180deg, rgba(6,15,38,0.4) 0%, rgba(6,15,38,0.65) 55%, rgba(6,15,38,0.93) 100%)`}
     />
     <AbsoluteFill
       style={{
-        background: `radial-gradient(circle at 50% 32%, rgba(228,61,69,0.22) 0%, rgba(228,61,69,0) 48%)`,
+        background: `radial-gradient(circle at 50% 30%, rgba(228,61,69,0.2) 0%, rgba(228,61,69,0) 46%)`,
       }}
     />
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", top: "-14%" }}>
-      <IntrusionOverlay width={300} />
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", top: "-16%" }}>
+      <IntrusionOverlay width={280} />
     </AbsoluteFill>
+    <DotGrid />
     <SlideNumber n={2} />
 
-    <Stage gap={24} justify="flex-end" padTop={90} padBottom={150}>
+    <Stage gap={24} justify="flex-end" padTop={90} padBottom={230}>
       <SlideKicker color={colors.textFaint}>Alarma convencional</SlideKicker>
-      <SlideHeadline size={56} lines={[{ text: "Solo emite" }, { text: "un sonido." }]} />
+      <SlideHeadline size={54} lines={[{ text: "Solo emite" }, { text: "un sonido." }]} />
       <div
         style={{
           fontFamily: bodyFont,
           fontWeight: 700,
-          fontSize: 34,
+          fontSize: 32,
           lineHeight: 1.35,
           color: colors.red,
           maxWidth: 780,
@@ -150,27 +219,35 @@ export const Slide2Problem: React.FC = () => (
         Y si nadie interviene, el problema sigue ahí.
       </div>
     </Stage>
+    <SlideFooter />
   </AbsoluteFill>
 );
 
 // ---------- Slide 3: solution ----------
 export const Slide3Solution: React.FC = () => (
-  <Background variant="night">
-    <GlowOrb size={640} top={-140} left={220} color={colors.blue} opacity={0.2} />
+  <AbsoluteFill style={{ backgroundColor: colors.navyDeepest }}>
+    <PhotoBackdrop
+      src="system-lineup.png"
+      brightness={0.28}
+      saturate={0.55}
+      scrim={`linear-gradient(180deg, rgba(6,15,38,0.72) 0%, rgba(6,15,38,0.86) 45%, rgba(6,15,38,0.97) 100%)`}
+    />
+    <GlowOrb size={600} top={-140} left={220} color={colors.blue} opacity={0.18} />
+    <DotGrid />
     <SlideNumber n={3} />
 
-    <Stage gap={26} padTop={130} padBottom={90}>
+    <Stage gap={24} padTop={120} padBottom={130}>
       <SlideKicker>Monitoreo real</SlideKicker>
       <SlideHeadline
-        size={54}
+        size={50}
         lines={[{ text: "Cada evento, atendido" }, { text: "las 24 horas.", accent: true }]}
       />
 
-      <div style={{ marginTop: 6 }}>
-        <OperatorSilhouette width={420} />
+      <div style={{ marginTop: 2 }}>
+        <OperatorSilhouette width={380} />
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, width: "100%", marginTop: 4 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", marginTop: 2 }}>
         {[
           { icon: SensorIcon, text: "Detección inmediata" },
           { icon: HeadsetIcon, text: "Verificación del evento" },
@@ -181,19 +258,19 @@ export const Slide3Solution: React.FC = () => (
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 18,
-              background: "rgba(255,255,255,0.06)",
+              gap: 16,
+              background: "rgba(255,255,255,0.07)",
               border: `1px solid ${colors.blueGlow}44`,
-              borderRadius: 18,
-              padding: "14px 26px",
+              borderRadius: 16,
+              padding: "12px 24px",
             }}
           >
             <div
               style={{
-                width: 44,
-                height: 44,
+                width: 40,
+                height: 40,
                 borderRadius: "50%",
-                background: "rgba(91,143,232,0.16)",
+                background: "rgba(91,143,232,0.18)",
                 border: `2px solid ${colors.blueGlow}`,
                 display: "flex",
                 alignItems: "center",
@@ -201,13 +278,13 @@ export const Slide3Solution: React.FC = () => (
                 flexShrink: 0,
               }}
             >
-              <Icon size={22} color={colors.blueGlow} />
+              <Icon size={20} color={colors.blueGlow} />
             </div>
             <div
               style={{
                 fontFamily: condensedFont,
                 fontWeight: 700,
-                fontSize: 30,
+                fontSize: 27,
                 letterSpacing: 0.5,
                 textTransform: "uppercase",
                 color: colors.white,
@@ -219,36 +296,33 @@ export const Slide3Solution: React.FC = () => (
         ))}
       </div>
     </Stage>
-  </Background>
+    <SlideFooter />
+  </AbsoluteFill>
 );
 
 // ---------- Slide 4: CTA ----------
 export const Slide4CTA: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: colors.navyDeepest }}>
-    <AbsoluteFill style={{ overflow: "hidden" }}>
-      <Img
-        src={staticFile("house-system-full.png")}
-        style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.38) saturate(0.5)" }}
-      />
-    </AbsoluteFill>
-    <AbsoluteFill
-      style={{
-        background: `linear-gradient(180deg, rgba(6,15,38,0.55) 0%, rgba(6,15,38,0.7) 40%, rgba(6,15,38,0.94) 100%)`,
-      }}
+    <PhotoBackdrop
+      src="house-system-full.png"
+      brightness={0.38}
+      saturate={0.5}
+      scrim={`linear-gradient(180deg, rgba(6,15,38,0.55) 0%, rgba(6,15,38,0.7) 40%, rgba(6,15,38,0.94) 100%)`}
     />
     <GlowOrb size={640} top={-150} left={220} color={colors.blue} opacity={0.16} />
+    <DotGrid />
     <SlideNumber n={4} />
 
-    <Stage gap={0} padTop={150} padBottom={130}>
-      <Logo width={330} />
+    <Stage gap={0} padTop={140} padBottom={130}>
+      <Logo width={320} />
 
-      <div style={{ height: 1, width: 120, background: `${colors.blueGlow}55`, margin: "34px 0 30px" }} />
+      <div style={{ height: 1, width: 120, background: `${colors.blueGlow}55`, margin: "32px 0 28px" }} />
 
       <div
         style={{
           fontFamily: bodyFont,
           fontWeight: 600,
-          fontSize: 26,
+          fontSize: 25,
           letterSpacing: 2,
           textTransform: "uppercase",
           color: colors.blueGlow,
@@ -258,22 +332,22 @@ export const Slide4CTA: React.FC = () => (
         Más de 30 años de experiencia
       </div>
 
-      <SlideHeadline size={44} lines={[{ text: "Pedí tu asesoramiento" }, { text: "sin cargo.", accent: true }]} />
+      <SlideHeadline size={42} lines={[{ text: "Pedí tu asesoramiento" }, { text: "sin cargo.", accent: true }]} />
 
       <div
         style={{
-          marginTop: 34,
+          marginTop: 32,
           display: "flex",
           alignItems: "center",
           gap: 20,
           background: "#25D366",
           borderRadius: 32,
-          padding: "22px 44px",
+          padding: "20px 42px",
           boxShadow: "0 12px 50px #25D36655",
         }}
       >
-        <WhatsAppIcon size={44} color={colors.navyDeepest} glyphColor={colors.white} />
-        <div style={{ fontFamily: condensedFont, fontWeight: 800, fontSize: 38, color: colors.navyDeepest }}>
+        <WhatsAppIcon size={42} color={colors.navyDeepest} glyphColor={colors.white} />
+        <div style={{ fontFamily: condensedFont, fontWeight: 800, fontSize: 36, color: colors.navyDeepest }}>
           3444-532519
         </div>
       </div>
@@ -281,7 +355,7 @@ export const Slide4CTA: React.FC = () => (
         style={{
           fontFamily: bodyFont,
           fontWeight: 600,
-          fontSize: 26,
+          fontSize: 25,
           color: colors.textMuted,
           marginTop: 16,
         }}
@@ -289,34 +363,6 @@ export const Slide4CTA: React.FC = () => (
         Escribinos por WhatsApp
       </div>
     </Stage>
-
-    <div
-      style={{
-        position: "absolute",
-        bottom: 56,
-        left: 0,
-        right: 0,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 6,
-      }}
-    >
-      <div style={{ height: 1, width: 80, background: `${colors.textFaint}55`, marginBottom: 14 }} />
-      <div
-        style={{
-          fontFamily: condensedFont,
-          fontWeight: 700,
-          fontSize: 24,
-          letterSpacing: 1.5,
-          color: colors.textMuted,
-        }}
-      >
-        CENTRAL VIGÍA
-      </div>
-      <div style={{ fontFamily: bodyFont, fontWeight: 500, fontSize: 19, color: colors.textFaint }}>
-        centralvigiaseguridad.com
-      </div>
-    </div>
+    <SlideFooter />
   </AbsoluteFill>
 );

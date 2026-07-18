@@ -224,49 +224,99 @@ export const Slide3Solution: React.FC = () => (
 
 // ---------- Slide 4: CTA ----------
 export const Slide4CTA: React.FC = () => (
-  <Background variant="vertical">
-    <GlowOrb size={700} top={-160} left={190} color={colors.blue} opacity={0.24} />
+  <AbsoluteFill style={{ backgroundColor: colors.navyDeepest }}>
+    <AbsoluteFill style={{ overflow: "hidden" }}>
+      <Img
+        src={staticFile("house-system-full.png")}
+        style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.38) saturate(0.5)" }}
+      />
+    </AbsoluteFill>
+    <AbsoluteFill
+      style={{
+        background: `linear-gradient(180deg, rgba(6,15,38,0.55) 0%, rgba(6,15,38,0.7) 40%, rgba(6,15,38,0.94) 100%)`,
+      }}
+    />
+    <GlowOrb size={640} top={-150} left={220} color={colors.blue} opacity={0.16} />
     <SlideNumber n={4} />
 
-    <Stage gap={28} padTop={220} padBottom={170}>
-      <Logo width={380} />
+    <Stage gap={0} padTop={150} padBottom={130}>
+      <Logo width={330} />
+
+      <div style={{ height: 1, width: 120, background: `${colors.blueGlow}55`, margin: "34px 0 30px" }} />
 
       <div
         style={{
+          fontFamily: bodyFont,
+          fontWeight: 600,
+          fontSize: 26,
+          letterSpacing: 2,
+          textTransform: "uppercase",
+          color: colors.blueGlow,
+          marginBottom: 14,
+        }}
+      >
+        Más de 30 años de experiencia
+      </div>
+
+      <SlideHeadline size={44} lines={[{ text: "Pedí tu asesoramiento" }, { text: "sin cargo.", accent: true }]} />
+
+      <div
+        style={{
+          marginTop: 34,
           display: "flex",
           alignItems: "center",
           gap: 20,
           background: "#25D366",
           borderRadius: 32,
-          padding: "22px 40px",
-          boxShadow: "0 0 50px #25D36688",
+          padding: "22px 44px",
+          boxShadow: "0 12px 50px #25D36655",
         }}
       >
-        <WhatsAppIcon size={46} color={colors.navyDeepest} glyphColor={colors.white} />
-        <div style={{ fontFamily: condensedFont, fontWeight: 800, fontSize: 40, color: colors.navyDeepest }}>
+        <WhatsAppIcon size={44} color={colors.navyDeepest} glyphColor={colors.white} />
+        <div style={{ fontFamily: condensedFont, fontWeight: 800, fontSize: 38, color: colors.navyDeepest }}>
           3444-532519
         </div>
       </div>
-      <div style={{ fontFamily: bodyFont, fontWeight: 600, fontSize: 28, color: colors.textMuted }}>
+      <div
+        style={{
+          fontFamily: bodyFont,
+          fontWeight: 600,
+          fontSize: 26,
+          color: colors.textMuted,
+          marginTop: 16,
+        }}
+      >
         Escribinos por WhatsApp
       </div>
-
-      <div style={{ marginTop: 26, textAlign: "center" }}>
-        <div
-          style={{
-            fontFamily: condensedFont,
-            fontWeight: 800,
-            fontSize: 34,
-            letterSpacing: 1,
-            color: colors.white,
-          }}
-        >
-          CENTRAL VIGÍA
-        </div>
-        <div style={{ fontFamily: bodyFont, fontWeight: 500, fontSize: 24, color: colors.textMuted, marginTop: 6 }}>
-          Cuidándote hace más de 30 años.
-        </div>
-      </div>
     </Stage>
-  </Background>
+
+    <div
+      style={{
+        position: "absolute",
+        bottom: 56,
+        left: 0,
+        right: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 6,
+      }}
+    >
+      <div style={{ height: 1, width: 80, background: `${colors.textFaint}55`, marginBottom: 14 }} />
+      <div
+        style={{
+          fontFamily: condensedFont,
+          fontWeight: 700,
+          fontSize: 24,
+          letterSpacing: 1.5,
+          color: colors.textMuted,
+        }}
+      >
+        CENTRAL VIGÍA
+      </div>
+      <div style={{ fontFamily: bodyFont, fontWeight: 500, fontSize: 19, color: colors.textFaint }}>
+        centralvigiaseguridad.com
+      </div>
+    </div>
+  </AbsoluteFill>
 );

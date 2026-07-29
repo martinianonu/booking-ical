@@ -8,6 +8,7 @@ import { TypeImpact, typeImpactDuration } from "./daily/TypeImpactTemplate";
 import { typeImpactConfigs } from "./daily/typeImpactConfig";
 import { WhatsAppAd, WHATSAPP_AD_DURATION } from "./whatsapp/WhatsAppAd";
 import { Slide1Hook, Slide2Problem, Slide3Solution, Slide4CTA } from "./carousel/CarouselSlides";
+import { RenewalAd, RENEWAL_AD_DURATION } from "./renewal/RenewalAd";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -74,6 +75,14 @@ export const RemotionRoot: React.FC = () => {
           height={1350}
         />
       ))}
+      <Composition
+        id="RenewalAd"
+        component={RenewalAd}
+        durationInFrames={RENEWAL_AD_DURATION}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
     </>
   );
 };

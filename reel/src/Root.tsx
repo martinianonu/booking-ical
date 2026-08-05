@@ -9,6 +9,12 @@ import { typeImpactConfigs } from "./daily/typeImpactConfig";
 import { WhatsAppAd, WHATSAPP_AD_DURATION } from "./whatsapp/WhatsAppAd";
 import { Slide1Hook, Slide2Problem, Slide3Solution, Slide4CTA } from "./carousel/CarouselSlides";
 import { RenewalAd, RENEWAL_AD_DURATION } from "./renewal/RenewalAd";
+import {
+  Personalization1Hook,
+  Personalization2Factors,
+  Personalization3Kits,
+  Personalization4Process,
+} from "./carousel/PersonalizationSlides";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -83,6 +89,22 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
       />
+      {[
+        Personalization1Hook,
+        Personalization2Factors,
+        Personalization3Kits,
+        Personalization4Process,
+      ].map((Slide, i) => (
+        <Composition
+          key={i}
+          id={`Personalization${i + 1}`}
+          component={Slide}
+          durationInFrames={30}
+          fps={30}
+          width={1080}
+          height={1350}
+        />
+      ))}
     </>
   );
 };

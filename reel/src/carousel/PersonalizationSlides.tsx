@@ -1,7 +1,6 @@
 import { AbsoluteFill } from "remotion";
 import { GlowOrb } from "../components/GlowOrb";
 import { Stage } from "../components/Stage";
-import { HouseIcon, SensorIcon, CameraIcon, ShieldIcon } from "../components/Icons";
 import { colors } from "../brand";
 import { fontFamily as bodyFont } from "../fonts";
 import { condensedFont } from "../daily/typeFonts";
@@ -9,89 +8,67 @@ import { DotGrid, SlideKicker, SlideHeadline, SlideNumber, SlideFooter, PhotoBac
 
 // 4:5 Instagram carousel — Pilar: Producto | Tema: personalización de la
 // instalación | Objetivo: consideración | Idea creativa: infografía
-// educativa, "consultá cuál kit es ideal para vos". No CTA slide — the
-// client already has one — so slide 4 closes the narrative softly instead
-// of repeating a WhatsApp button.
+// educativa con tono más suelto/de venta consultiva, "consultá cuál kit
+// es ideal para vos". No CTA slide — the client already has one — so
+// slide 4 closes the narrative softly instead of repeating a WhatsApp
+// button. Each slide uses a different real product/lifestyle photo.
 
-// ---------- Slide 1: hook ----------
+// ---------- Slide 1: hook (playful analogy) ----------
 export const Personalization1Hook: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: colors.navyDeepest }}>
     <PhotoBackdrop src="house-photo.png" brightness={0.4} saturate={0.35} />
     <DotGrid />
     <SlideNumber n={1} />
     <Stage gap={22} justify="flex-end" padTop={90} padBottom={230}>
-      <SlideKicker>Personalización</SlideKicker>
+      <SlideKicker>Ojo con esto</SlideKicker>
       <SlideHeadline
-        size={58}
-        lines={[{ text: "Cada espacio" }, { text: "es único.", accent: true }]}
+        size={54}
+        lines={[{ text: "Tu casa no es" }, { text: "un depto en serie.", accent: true }]}
       />
       <div
         style={{
           fontFamily: bodyFont,
           fontWeight: 600,
-          fontSize: 30,
-          lineHeight: 1.35,
+          fontSize: 29,
+          lineHeight: 1.4,
           color: colors.textMuted,
           maxWidth: 780,
         }}
       >
-        Por eso tu alarma también debería serlo. En Central Vigía no instalamos
-        alarmas genéricas: diseñamos cada sistema a medida.
+        Y tu alarma tampoco debería serlo. Instalar lo mismo en todos lados es
+        como usar las mismas zapatillas para correr una maratón y para ir a
+        un casamiento.
       </div>
     </Stage>
     <SlideFooter />
   </AbsoluteFill>
 );
 
-// ---------- Slide 2: what we evaluate ----------
-const FactorRow: React.FC<{
-  icon: React.FC<{ size?: number; color?: string }>;
-  title: string;
-  detail: string;
-}> = ({ icon: Icon, title, detail }) => (
+// ---------- Slide 2: playful "quiz" instead of a dry factor list ----------
+const QuizChip: React.FC<{ emoji: string; text: string; rotate: number }> = ({ emoji, text, rotate }) => (
   <div
     style={{
+      transform: `rotate(${rotate}deg)`,
       display: "flex",
-      alignItems: "flex-start",
-      gap: 18,
-      background: "rgba(255,255,255,0.06)",
+      alignItems: "center",
+      gap: 16,
+      background: "rgba(255,255,255,0.07)",
       border: `1px solid ${colors.blueGlow}44`,
-      borderRadius: 18,
-      padding: "18px 24px",
+      borderRadius: 20,
+      padding: "16px 24px",
     }}
   >
+    <div style={{ fontSize: 30, lineHeight: 1 }}>{emoji}</div>
     <div
       style={{
-        width: 48,
-        height: 48,
-        borderRadius: "50%",
-        background: "rgba(91,143,232,0.16)",
-        border: `2px solid ${colors.blueGlow}`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
+        fontFamily: bodyFont,
+        fontWeight: 700,
+        fontSize: 25,
+        color: colors.white,
+        lineHeight: 1.25,
       }}
     >
-      <Icon size={24} color={colors.blueGlow} />
-    </div>
-    <div>
-      <div
-        style={{
-          fontFamily: condensedFont,
-          fontWeight: 700,
-          fontSize: 26,
-          letterSpacing: 0.3,
-          textTransform: "uppercase",
-          color: colors.white,
-          marginBottom: 4,
-        }}
-      >
-        {title}
-      </div>
-      <div style={{ fontFamily: bodyFont, fontWeight: 500, fontSize: 21, color: colors.textMuted, lineHeight: 1.3 }}>
-        {detail}
-      </div>
+      {text}
     </div>
   </div>
 );
@@ -99,50 +76,47 @@ const FactorRow: React.FC<{
 export const Personalization2Factors: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: colors.navyDeepest }}>
     <PhotoBackdrop
-      src="system-lineup.png"
-      brightness={0.2}
-      saturate={0.45}
-      scrim={`linear-gradient(180deg, rgba(6,15,38,0.78) 0%, rgba(6,15,38,0.88) 45%, rgba(6,15,38,0.97) 100%)`}
+      src="person-phone.png"
+      brightness={0.24}
+      saturate={0.5}
+      scrim={`linear-gradient(180deg, rgba(6,15,38,0.72) 0%, rgba(6,15,38,0.86) 45%, rgba(6,15,38,0.97) 100%)`}
     />
     <DotGrid />
     <SlideNumber n={2} />
 
-    <Stage gap={22} padTop={110} padBottom={130}>
-      <SlideKicker>Infografía</SlideKicker>
-      <SlideHeadline size={46} lines={[{ text: "¿Qué evaluamos para" }, { text: "armar tu kit?", accent: true }]} />
+    <Stage gap={20} padTop={110} padBottom={140}>
+      <SlideKicker>Antes de instalar</SlideKicker>
+      <SlideHeadline size={44} lines={[{ text: "Te hacemos algunas" }, { text: "preguntas raras.", accent: true }]} />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, width: "100%", marginTop: 10 }}>
-        <FactorRow
-          icon={HouseIcon}
-          title="Tamaño del espacio"
-          detail="Metros cuadrados y distribución de ambientes."
-        />
-        <FactorRow
-          icon={SensorIcon}
-          title="Accesos"
-          detail="Cantidad de puertas y ventanas a cubrir."
-        />
-        <FactorRow
-          icon={CameraIcon}
-          title="Zonas a proteger"
-          detail="Interior, perímetro o exterior."
-        />
-        <FactorRow
-          icon={ShieldIcon}
-          title="Uso del inmueble"
-          detail="Hogar, local comercial u oficina."
-        />
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%", marginTop: 12 }}>
+        <QuizChip emoji="🐶" text="¿Tenés un perro que cruza el patio a toda hora?" rotate={-1.2} />
+        <QuizChip emoji="🚪" text="¿Cuántas puertas y ventanas hay que cubrir?" rotate={1} />
+        <QuizChip emoji="🏢" text="¿Es tu casa, tu depto o tu local?" rotate={-0.8} />
+        <QuizChip emoji="📹" text="¿Necesitás ver todo desde el celular, estés donde estés?" rotate={1.3} />
+      </div>
+
+      <div
+        style={{
+          marginTop: 14,
+          fontFamily: bodyFont,
+          fontWeight: 600,
+          fontSize: 24,
+          color: colors.textMuted,
+          textAlign: "center",
+        }}
+      >
+        Ninguna respuesta es "incorrecta". Todas nos ayudan a armar TU kit.
       </div>
     </Stage>
     <SlideFooter />
   </AbsoluteFill>
 );
 
-// ---------- Slide 3: kit comparison ----------
-const KitCard: React.FC<{ name: string; profile: string; features: string; accent?: boolean }> = ({
+// ---------- Slide 3: kit comparison with witty one-liners ----------
+const KitCard: React.FC<{ name: string; profile: string; joke: string; accent?: boolean }> = ({
   name,
   profile,
-  features,
+  joke,
   accent = false,
 }) => (
   <div
@@ -153,12 +127,12 @@ const KitCard: React.FC<{ name: string; profile: string; features: string; accen
       padding: "20px 24px",
     }}
   >
-    <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
+    <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 8 }}>
       <div
         style={{
           fontFamily: condensedFont,
           fontWeight: 800,
-          fontSize: 30,
+          fontSize: 29,
           letterSpacing: 0.5,
           textTransform: "uppercase",
           color: accent ? colors.blueGlow : colors.white,
@@ -166,10 +140,10 @@ const KitCard: React.FC<{ name: string; profile: string; features: string; accen
       >
         {name}
       </div>
-      <div style={{ fontFamily: bodyFont, fontWeight: 600, fontSize: 19, color: colors.textFaint }}>{profile}</div>
+      <div style={{ fontFamily: bodyFont, fontWeight: 600, fontSize: 18, color: colors.textFaint }}>{profile}</div>
     </div>
-    <div style={{ fontFamily: bodyFont, fontWeight: 500, fontSize: 21, color: colors.textMuted, lineHeight: 1.35 }}>
-      {features}
+    <div style={{ fontFamily: bodyFont, fontWeight: 500, fontSize: 21, color: colors.textMuted, lineHeight: 1.35, fontStyle: "italic" }}>
+      "{joke}"
     </div>
   </div>
 );
@@ -177,35 +151,35 @@ const KitCard: React.FC<{ name: string; profile: string; features: string; accen
 export const Personalization3Kits: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: colors.navyDeepest }}>
     <PhotoBackdrop
-      src="camera-device.png"
-      brightness={0.22}
-      saturate={0.5}
+      src="app-arm-disarm.png"
+      brightness={0.24}
+      saturate={0.55}
       scrim={`linear-gradient(180deg, rgba(6,15,38,0.8) 0%, rgba(6,15,38,0.9) 45%, rgba(6,15,38,0.97) 100%)`}
     />
     <GlowOrb size={600} top={-140} left={220} color={colors.blue} opacity={0.16} />
     <DotGrid />
     <SlideNumber n={3} />
 
-    <Stage gap={22} padTop={120} padBottom={130}>
-      <SlideKicker>Educativo</SlideKicker>
-      <SlideHeadline size={44} lines={[{ text: "3 kits, pensados" }, { text: "para cada espacio.", accent: true }]} />
+    <Stage gap={20} padTop={120} padBottom={130}>
+      <SlideKicker>Elegí el tuyo</SlideKicker>
+      <SlideHeadline size={44} lines={[{ text: "3 kits." }, { text: "Cero genéricos.", accent: true }]} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%", marginTop: 10 }}>
         <KitCard
           name="Kit Hogar"
           profile="Depto o casa chica"
-          features="Sensores de apertura, 1 cámara y panel de control básico."
+          joke="Para cuando tu mayor amenaza es el gato del vecino."
         />
         <KitCard
           name="Kit Hogar+"
           profile="Casa grande o PH"
-          features="Suma cámaras exteriores, sirena y control remoto por app."
+          joke="Para la casa con patio, perro y esa ventana que 'siempre queda abierta'."
           accent
         />
         <KitCard
           name="Kit Negocio"
           profile="Local u oficina"
-          features="Cobertura perimetral, múltiples zonas y monitoreo prioritario."
+          joke="Para cuando lo de adentro vale más que la vidriera."
         />
       </div>
     </Stage>
@@ -252,27 +226,30 @@ export const Personalization4Process: React.FC = () => (
     <SlideNumber n={4} />
 
     <Stage gap={26} padTop={130} padBottom={150}>
-      <SlideKicker>Así lo hacemos</SlideKicker>
-      <SlideHeadline size={44} lines={[{ text: "Tu instalación," }, { text: "diseñada a medida.", accent: true }]} />
+      <SlideKicker>Así lo armamos</SlideKicker>
+      <SlideHeadline
+        size={40}
+        lines={[{ text: "Nada de 'una alarma" }, { text: "para todos'.", accent: true }]}
+      />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 20, width: "100%", marginTop: 14 }}>
-        <ProcessStep n={1} text="Evaluamos tu espacio" />
-        <ProcessStep n={2} text="Diseñamos el kit ideal" />
-        <ProcessStep n={3} text="Instalamos y activamos el monitoreo" />
+        <ProcessStep n={1} text="Te conocemos (y a tu espacio también)" />
+        <ProcessStep n={2} text="Te armamos el kit ideal" />
+        <ProcessStep n={3} text="Lo instalamos y activamos el monitoreo" />
       </div>
 
       <div
         style={{
           marginTop: 18,
           fontFamily: bodyFont,
-          fontWeight: 600,
+          fontWeight: 700,
           fontSize: 28,
           color: colors.textMuted,
           textAlign: "center",
           maxWidth: 780,
         }}
       >
-        Consultá cuál es el kit ideal para tu hogar o negocio.
+        La tuya, a tu manera. ¿Cuál es la tuya?
       </div>
     </Stage>
     <SlideFooter />
